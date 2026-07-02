@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>これ乗っていいの？ – 名古屋市バス</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  :root{
+    --blue:#1a6fd4; --green:#0d7a4f; --green-bg:#e3f4ec;
+    --red:#c0392b; --red-bg:#fdecea; --ink:#1b1b1b; --muted:#666;
+    --led:#ff9500; --card:#fff; --bg:#f2f1ec;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{margin:0; background:var(--bg); color:var(--ink);
+       font-family:"Hiragino Sans","Yu Gothic UI","Meiryo",sans-serif; font-size:18px; line-height:1.6;}
+  .wrap{max-width:520px; margin:0 auto; padding:16px 14px 60px;}
+  h1{font-size:22px; margin:8px 0 2px; text-align:center;}
+  .sub{text-align:center; color:var(--muted); font-size:13px; margin:0 0 18px;}
+  .card{background:var(--card); border-radius:16px; padding:16px; margin-bottom:14px;
+        box-shadow:0 1px 3px rgba(0,0,0,.08);}
+  .label{font-size:15px; color:var(--muted); margin-bottom:6px;}
+  .bigval{font-size:24px; font-weight:700;}
+  input[type=text]{width:100%; font-size:20px; padding:12px; border:2px solid #ccc; border-radius:10px;}
+  input[type=text]:focus{border-color:var(--blue); outline:none;}
+  .btn{display:block; width:100%; font-size:20px; font-weight:700; padding:14px;
+       border:none; border-radius:12px; cursor:pointer; margin-top:10px;}
+  .btn-blue{background:var(--blue); color:#fff;}
+  .btn-gray{background:#e5e3dc; color:var(--ink); font-weight:500; font-size:16px; padding:10px;}
+  .suggest{margin-top:6px;}
+  .suggest button{display:block; width:100%; text-align:left; font-size:19px; padding:12px;
+       background:#fff; border:1px solid #ddd; border-radius:10px; margin-top:6px; cursor:pointer;}
+  .suggest button:active{background:#eef4fd;}
+  .led{background:#141414; border:4px solid #3a3a3a; border-radius:12px; padding:14px 10px; text-align:center;}
+  .led .row{display:flex; align-items:baseline; justify-content:center; gap:16px; flex-wrap:wrap;}
+  .led .num{font-size:34px;} .led .dest{font-size:40px; letter-spacing:.08em;}
+  .led .via{font-size:16px; margin-top:2px;}
+  .led .num,.led .dest,.led .via{color:var(--led); font-family:"Hiragino Kaku Gothic Std","Yu Gothic",sans-serif; font-weight:800;}
+  .ok-title{color:var(--green); font-weight:700; font-size:18px; margin:14px 0 6px;}
+  .ng-title{color:var(--red); font-weight:700; font-size:18px; margin:14px 0 6px;}
+  .buslist{border-radius:10px; padding:8px 12px; font-size:18px;}
+  .buslist.ok{background:var(--green-bg);} .buslist.ng{background:var(--red-bg);}
+  .buslist div{padding:6px 0; border-bottom:1px dashed rgba(0,0,0,.12);}
+  .buslist div:last-child{border-bottom:none;}
+  .t{display:inline-block; min-width:64px; font-weight:700; font-variant-numeric:tabular-nums;}
+  .rt{display:inline-block; background:#fff; border:1px solid #bbb; border-radius:6px;
+      padding:0 6px; font-size:15px; margin-right:6px;}
+  .warn{background:#fff5d6; border:2px solid #e5b100; border-radius:12px; padding:14px; font-size:19px; font-weight:700;}
+  .move{font-size:26px; color:var(--blue);}
+  .polemap{width:100%; height:auto; background:#f7f6f2; border-radius:10px; margin-top:8px;}
+  .pill{display:inline-block; border-radius:20px; padding:2px 12px; font-size:15px; font-weight:700;}
+  .pill.ok{background:var(--green-bg); color:var(--green);} .pill.ng{background:var(--red-bg); color:var(--red);}
+  .small{font-size:13px; color:var(--muted);}
+  .step{display:flex; align-items:center; gap:8px; margin-bottom:6px;}
+  .stepnum{background:var(--blue); color:#fff; border-radius:50%; width:28px; height:28px;
+      display:flex; align-items:center; justify-content:center; font-weight:700; flex-shrink:0;}
+  a.link{color:var(--blue);}
+  footer{margin-top:24px; text-align:center;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🚌 これ乗っていいの？</h1>
+  <p class="sub">名古屋市バス版プロトタイプ</p>
+
+  <!-- STEP 1: 降りたいバス停 -->
+  <div class="card" id="cardDest">
+    <div class="step"><div class="stepnum">1</div><div class="label" style="margin:0">降りたいバス停（目的地）</div></div>
+    <div id="destShow" style="display:none">
+      <span class="bigval" id="destName"></span>
+      <button class="btn btn-gray" onclick="resetDest()">変更する</button>
+    </div>
+    <div id="destPick">
+      <input type="text" id="destInput" placeholder="例：四軒家" oninput="suggest('dest')">
+      <div class="suggest" id="destSug"></div>
+    </div>
+  </div>
+
+  <!-- STEP 2: いまいるバス停 -->
+  <div class="card" id="cardHere">
+    <div class="step"><div class="stepnum">2</div><div class="label" style="margin:0">いまいるバス停</div></div>
+    <div id="hereShow" style="display:none">
+      <span class="bigval" id="hereName"></span>
+      <button class="btn btn-gray" onclick="resetHere()">変更する</button>
+    </div>
+    <div id="herePick">
+      <button class="btn btn-blue" onclick="useGPS()">📍 いまの場所からさがす</button>
+      <div class="small" style="text-align:center; margin:8px 0 4px">または名前でさがす</div>
+      <input type="text" id="hereInput" placeholder="例：守山プール" oninput="suggest('here')">
+      <div class="suggest" id="hereSug"></div>
+      <div class="small" id="gpsMsg"></div>
+    </div>
+  </div>
+
+  <div id="result"></div>
+
+  <footer class="small">
+    出典：名古屋市交通局「市バスGTFS-JPデータ」(CC BY 4.0) 2026年3月28日改正<br>
+    時刻表ベースの案内です。遅延には対応していません（プロトタイプ）。
+  </footer>
+</div>
+
+<script src="data.js"></script>
+<script>
+const GD = window.GD;
+const nameToPoles = {};
+GD.stops.forEach((s,i)=>{ (nameToPoles[s[0]] = nameToPoles[s[0]]||[]).push(i); });
+const stopNames = Object.keys(nameToPoles);
+
+// のりば別 通過trip索引
+const poleTrips = {};
+GD.patterns.forEach((pat,pi)=>{ pat.forEach(si=>{ (poleTrips[si]=poleTrips[si]||new Set()); }); });
+GD.trips.forEach((t,ti)=>{ GD.patterns[t[1]].forEach(si=>poleTrips[si].add(ti)); });
+
+let dest = localStorage.getItem('dest') || null;
+let here = null;           // バス停名
+let myPos = null;          // {lat,lon} GPS取得時のみ
+let nearestPole = null;    // GPS時の最寄りのりばindex
+
+function esc(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+function toHira(s){ return s.replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60)); }
+function fuzzy(q){
+  const qs=[...q], qh=[...toHira(q)];
+  return stopNames.map(n=>{
+    const ns=[...n], ys=[...(GD.yomi[n]||'')];
+    let c=0; qs.forEach(ch=>{ if(ns.includes(ch)) c++; });
+    let cy=0; qh.forEach(ch=>{ if(ys.includes(ch)) cy++; });
+    let cm=0; qh.forEach(ch=>{ if(ns.includes(ch)||ys.includes(ch)) cm++; });
+    const sc=Math.max(c/Math.max(qs.length,ns.length), ys.length?cy/Math.max(qh.length,ys.length):0, cm/qh.length*0.9);
+    return {n, sc};
+  }).filter(x=>x.sc>=0.5).sort((a,b)=>b.sc-a.sc).slice(0,5).map(x=>x.n);
+}
+function suggest(kind){
+  const q = document.getElementById(kind+'Input').value.trim();
+  const box = document.getElementById(kind+'Sug');
+  box.innerHTML='';
+  if(q.length<1) return;
+  const qh = toHira(q);
+  let hits = stopNames.filter(n=>n.includes(q) || (GD.yomi[n]||'').includes(qh)).slice(0,8);
+  if(hits.length===0 && q.length>=2){
+    hits = fuzzy(q);
+    if(hits.length){
+      const note=document.createElement('div');
+      note.className='small';
+      note.textContent='その名前は見つかりません。似た名前のバス停：';
+      box.appendChild(note);
+    }
+  }
+  hits.forEach(n=>{
+    const b=document.createElement('button');
+    b.textContent=n;
+    b.onclick=()=>{ kind==='dest'?setDest(n):setHere(n,null); };
+    box.appendChild(b);
+  });
+}
+let walkMin = 0; // 近隣バス停へ徒歩移動する場合の所要分
+function setDest(n){ dest=n; localStorage.setItem('dest',n); render(); }
+function resetDest(){ dest=null; localStorage.removeItem('dest'); render(); }
+function setHere(n,pole){ here=n; nearestPole=pole; walkMin=0; render(); }
+function resetHere(){ here=null; nearestPole=null; myPos=null; walkMin=0; render(); }
+function goNearby(pi,w){ here=GD.stops[pi][0]; nearestPole=pi; walkMin=w; render(); window.scrollTo(0,0); }
+
+function dist(la1,lo1,la2,lo2){
+  const R=6371000, d=Math.PI/180;
+  const a=Math.sin((la2-la1)*d/2)**2 + Math.cos(la1*d)*Math.cos(la2*d)*Math.sin((lo2-lo1)*d/2)**2;
+  return 2*R*Math.asin(Math.sqrt(a));
+}
+function bearing(la1,lo1,la2,lo2){
+  const d=Math.PI/180;
+  const y=Math.sin((lo2-lo1)*d)*Math.cos(la2*d);
+  const x=Math.cos(la1*d)*Math.sin(la2*d)-Math.sin(la1*d)*Math.cos(la2*d)*Math.cos((lo2-lo1)*d);
+  const deg=(Math.atan2(y,x)*180/Math.PI+360)%360;
+  return ['北','北東','東','南東','南','南西','西','北西'][Math.round(deg/45)%8];
+}
+
+function useGPS(){
+  const msg=document.getElementById('gpsMsg');
+  msg.textContent='位置を取得中…';
+  navigator.geolocation.getCurrentPosition(p=>{
+    myPos={lat:p.coords.latitude, lon:p.coords.longitude};
+    let best=-1,bd=1e9;
+    GD.stops.forEach((s,i)=>{ const dd=dist(myPos.lat,myPos.lon,s[1],s[2]); if(dd<bd){bd=dd;best=i;} });
+    if(bd>800){ msg.textContent='近く(800m以内)にバス停が見つかりませんでした。名前でさがしてください。'; return; }
+    setHere(GD.stops[best][0], best);
+  }, e=>{ msg.textContent='位置情報が使えません。名前でさがしてください。'; });
+}
+
+function activeServices(dateObj){
+  const y=dateObj.getFullYear(), m=('0'+(dateObj.getMonth()+1)).slice(-2), dd=('0'+dateObj.getDate()).slice(-2);
+  const key=''+y+m+dd;
+  const dow=(dateObj.getDay()+6)%7; // 月=0…日=6
+  const act=new Set();
+  GD.calendar.forEach((days,i)=>{ if(days[dow]) act.add(i); });
+  const ex=GD.calendarDates[key];
+  if(ex){ ex.add.forEach(i=>act.add(i)); ex.del.forEach(i=>act.delete(i)); }
+  return act;
+}
+
+// のりばpoleIdxで待つとき：destNameへ行くOK便 / 行かないNG便
+function judge(poleIdx, destName, act, nowMin){
+  const destSet=new Set(nameToPoles[destName]);
+  const ok=[], ng=new Map();
+  const set=poleTrips[poleIdx]; if(!set) return {ok,ng:[]};
+  set.forEach(ti=>{
+    const [r,p,s,h,times]=GD.trips[ti];
+    if(!act.has(s)) return;
+    const pat=GD.patterns[p];
+    const i=pat.indexOf(poleIdx);
+    if(i<0 || i===pat.length-1) { return; }
+    const depart=times[i];
+    if(depart<nowMin) return;
+    let goes=false, arr=0;
+    for(let k=i+1;k<pat.length;k++){ if(destSet.has(pat[k])){goes=true; arr=times[k]; break;} }
+    if(goes) ok.push({t:depart, arr, r:GD.routes[r], h:GD.headsigns[h]});
+    else ng.set(GD.routes[r]+'|'+GD.headsigns[h], {r:GD.routes[r], h:GD.headsigns[h]});
+  });
+  ok.sort((a,b)=>a.t-b.t);
+  return {ok, ng:[...ng.values()]};
+}
+
+function fmt(min){ let h=Math.floor(min/60); if(h>=24)h-=24; return ('0'+h).slice(-2)+':'+('0'+min%60).slice(-2); }
+function parseHS(h){ const m=h.match(/^(.+?)（(.+)）$/); return m?{d:m[1],v:m[2]}:{d:h,v:''}; }
+
+function poleLabel(i){ const pc=GD.stops[i][3]; return pc? 'のりば'+pc : 'のりば'; }
+
+function render(){
+  document.getElementById('destShow').style.display = dest?'block':'none';
+  document.getElementById('destPick').style.display = dest?'none':'block';
+  if(dest) document.getElementById('destName').textContent='🏁 '+dest;
+  document.getElementById('hereShow').style.display = here?'block':'none';
+  document.getElementById('herePick').style.display = here?'none':'block';
+  if(here) document.getElementById('hereName').textContent='📍 '+here;
+  document.getElementById('destSug').innerHTML=''; document.getElementById('hereSug').innerHTML='';
+  const R=document.getElementById('result');
+  R.innerHTML='';
+  if(!dest||!here) return;
+  if(dest===here){ R.innerHTML='<div class="card">目的地といまの場所が同じです 😊</div>'; return; }
+
+  const now=new Date();
+  const nowMin=now.getHours()*60+now.getMinutes()+walkMin;
+  const act=activeServices(now);
+  const poles=nameToPoles[here];
+
+  // 各のりばを判定
+  const verdicts=poles.map(pi=>({pi, ...judge(pi,dest,act,nowMin)}));
+  const goodPoles=verdicts.filter(v=>v.ok.length>0);
+
+  let html='';
+  let mapSpec=null;
+
+  if(goodPoles.length===0){
+    html+='<div class="card"><div class="warn">😢 この時間、「'+esc(here)+'」から「'+esc(dest)+'」へ直接行くバスはありません。</div>';
+    // 歩いて行ける近くのバス停をさがす（半径800m）
+    let ref;
+    if(myPos){ ref=[myPos.lat,myPos.lon]; }
+    else { ref=[poles.reduce((a,i)=>a+GD.stops[i][1],0)/poles.length, poles.reduce((a,i)=>a+GD.stops[i][2],0)/poles.length]; }
+    const cands=[];
+    GD.stops.forEach((s,i)=>{
+      if(s[0]===here) return;
+      const dd=dist(ref[0],ref[1],s[1],s[2]);
+      if(dd>800) return;
+      const w=Math.ceil(dd/67); // 徒歩4km/h
+      const v=judge(i,dest,act,nowMin+w);
+      if(v.ok.length) cands.push({pi:i, dd:Math.round(dd), w, dep:v.ok[0].t});
+    });
+    if(cands.length){
+      // 同じバス停名は最寄りのりばだけ残す
+      cands.sort((a,b)=>a.dd-b.dd);
+      const seen=new Set(), top=[];
+      cands.forEach(c=>{ const n=GD.stops[c.pi][0]; if(!seen.has(n)){seen.add(n); top.push(c);} });
+      html+='<div class="label" style="margin-top:12px">🚶 でも、歩いて行ける近くのバス停から乗れます！</div><div class="suggest">';
+      top.slice(0,3).forEach(c=>{
+        const s=GD.stops[c.pi];
+        const dir=bearing(ref[0],ref[1],s[1],s[2]);
+        html+='<button onclick="goNearby('+c.pi+','+c.w+')">'+
+          '<b>'+esc(s[0])+' '+poleLabel(c.pi)+'</b><span class="small" id="lm'+c.pi+'"></span><br>'+
+          '<span class="small">'+dir+'へ約'+c.dd+'m（徒歩'+c.w+'分）・'+fmt(c.dep)+'発に間に合います</span></button>';
+      });
+      html+='</div><div class="small" style="margin-top:6px">押すと、そのバス停からの案内に切りかわります。</div>';
+      html+='<div id="lmap" style="height:280px; border-radius:10px; margin-top:10px"></div>';
+      mapSpec={markers:top.slice(0,3).map(c=>{
+        const s=GD.stops[c.pi];
+        return {pi:c.pi, lat:s[1],lon:s[2],label:s[3]||'?',color:'#0d7a4f',
+                popup:esc(s[0])+' '+poleLabel(c.pi)+'<br>徒歩約'+c.w+'分<br><a target="_blank" href="https://www.google.com/maps/dir/?api=1&destination='+s[1]+','+s[2]+'&travelmode=walking">Googleマップで道順</a>'};
+      }), user:[ref[0],ref[1]]};
+    } else {
+      html+='<div class="small" style="margin-top:8px">歩ける範囲（800m）にも直行できるバス停が見つかりませんでした。乗りかえが必要かもしれません。</div>';
+    }
+    html+='</div>';
+    R.innerHTML=html; drawMap(mapSpec);
+    if(mapSpec) annotate(mapSpec.markers.map(mk=>mk.pi));
+    return;
+  }
+  if(walkMin>0){
+    html+='<div class="card"><div class="small">🚶 「'+esc(here)+'」まで歩く時間（約'+walkMin+'分）を見込んで、間に合う便だけ表示しています。</div></div>';
+  }
+
+  // のりば誘導
+  if(poles.length>1){
+    html+='<div class="card"><div class="label">🚏 待つ場所に注意！「'+esc(here)+'」にはのりばが'+poles.length+'か所あります</div>';
+    let wrongPole = nearestPole!==null && !goodPoles.some(v=>v.pi===nearestPole) && poles.includes(nearestPole);
+    goodPoles.forEach(v=>{
+      const s=GD.stops[v.pi];
+      html+='<div style="margin:6px 0"><span class="pill ok">◎ '+poleLabel(v.pi)+'</span> で待ってください<span class="small" id="lm'+v.pi+'"></span>';
+      if(myPos){
+        const dd=Math.round(dist(myPos.lat,myPos.lon,s[1],s[2]));
+        if(dd>30) html+='<div class="move">→ ここから'+bearing(myPos.lat,myPos.lon,s[1],s[2])+'へ 約'+dd+'m</div>';
+        else html+='<div class="move">→ 今いる場所でOKです！</div>';
+      }
+      html+=' <a class="link small" target="_blank" href="https://www.google.com/maps/dir/?api=1&destination='+s[1]+','+s[2]+'&travelmode=walking">Googleマップで道順を見る</a>';
+      html+='</div>';
+    });
+    if(wrongPole){
+      html='<div class="card"><div class="warn">⚠️ いまいる'+poleLabel(nearestPole)+'には「'+esc(dest)+'」へ行くバスは来ません！</div></div>'+html;
+    }
+    verdicts.filter(v=>v.ok.length===0).forEach(v=>{
+      html+='<div style="margin:6px 0"><span class="pill ng">✕ '+poleLabel(v.pi)+'</span> <span class="small">には来ません</span><span class="small" id="lm'+v.pi+'"></span></div>';
+    });
+    html+='<div id="lmap" style="height:280px; border-radius:10px; margin-top:10px"></div>';
+    mapSpec={markers:poles.map(pi=>{
+      const s=GD.stops[pi], ok=goodPoles.some(v=>v.pi===pi);
+      return {pi:pi, lat:s[1],lon:s[2],label:s[3]||'?',color:ok?'#0d7a4f':'#c0392b',
+              popup:esc(s[0])+' '+poleLabel(pi)+(ok?'<br><b style="color:#0d7a4f">◎ ここで待つ</b>':'<br><b style="color:#c0392b">✕ 来ません</b>')};
+    }), user: myPos?[myPos.lat,myPos.lon]:null};
+    html+='</div>';
+  }
+
+  // 乗るべきバス（最初のgoodのりばの直近便をLED表示）
+  const v0 = (nearestPole!==null && goodPoles.find(v=>v.pi===nearestPole)) || goodPoles[0];
+  const next=v0.ok[0];
+  const hs=parseHS(next.h);
+  const wait=next.t-nowMin;
+  html+='<div class="card">';
+  html+='<div class="label">この「顔」のバスに乗ってください（'+poleLabel(v0.pi)+'）</div>';
+  html+='<div class="led"><div class="row"><span class="num">'+esc(next.r)+'</span><span class="dest">'+esc(hs.d)+'</span></div>';
+  if(hs.v) html+='<div class="via">'+esc(hs.v)+'</div>';
+  html+='</div>';
+  html+='<div style="text-align:center; margin-top:8px">'+fmt(next.t)+'発（あと約'+wait+'分）／「'+esc(dest)+'」には '+fmt(next.arr)+' ごろ着</div>';
+
+  html+='<div class="ok-title">◎ 乗ってOK（このあとの便）</div><div class="buslist ok">';
+  v0.ok.slice(0,5).forEach(b=>{ const p=parseHS(b.h);
+    html+='<div><span class="t">'+fmt(b.t)+'</span><span class="rt">'+esc(b.r)+'</span>'+esc(p.d)+(p.v?' <span class="small">'+esc(p.v)+'</span>':'')+'</div>'; });
+  html+='</div>';
+
+  if(v0.ng.length){
+    html+='<div class="ng-title">✕ 同じのりばに来ても乗らないで</div><div class="buslist ng">';
+    v0.ng.slice(0,6).forEach(b=>{ const p=parseHS(b.h);
+      html+='<div><span class="rt">'+esc(b.r)+'</span>'+esc(p.d)+(p.v?' <span class="small">'+esc(p.v)+'</span>':'')+'</div>'; });
+    html+='</div>';
+  }
+  html+='</div>';
+  R.innerHTML=html;
+  drawMap(mapSpec);
+  if(poles.length>1) annotate(poles);
+}
+
+let lmapObj=null, lmapMarkers={};
+function drawMap(spec){
+  const el=document.getElementById('lmap');
+  if(!el || !spec) return;
+  if(!window.L){ el.innerHTML='<div class="small" style="padding:20px">地図の読み込みにはインターネット接続が必要です</div>'; return; }
+  if(lmapObj){ lmapObj.remove(); lmapObj=null; }
+  const m=L.map(el);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    {maxZoom:19, attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors'}).addTo(m);
+  const pts=[];
+  lmapMarkers={};
+  spec.markers.forEach(mk=>{
+    pts.push([mk.lat,mk.lon]);
+    const mo=L.marker([mk.lat,mk.lon],{icon:L.divIcon({className:'',iconSize:[30,30],iconAnchor:[15,15],
+      html:'<div style="background:'+mk.color+';color:#fff;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:15px;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.5)">'+mk.label+'</div>'
+    })}).addTo(m).bindPopup(mk.popup);
+    if(mk.pi!==undefined) lmapMarkers[mk.pi]=mo;
+  });
+  if(spec.user){
+    pts.push(spec.user);
+    L.marker(spec.user,{icon:L.divIcon({className:'',iconSize:[70,42],iconAnchor:[35,14],
+      html:'<div style="text-align:center"><div style="background:#1a6fd4;border-radius:50%;width:16px;height:16px;margin:0 auto;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.5)"></div><div style="color:#1a6fd4;font-weight:bold;font-size:12px;text-shadow:0 0 3px #fff,0 0 3px #fff">いまここ</div></div>'
+    })}).addTo(m);
+  }
+  m.fitBounds(pts,{padding:[40,40],maxZoom:17});
+  lmapObj=m;
+}
+
+// のりばの目印（近くのお店）を OpenStreetMap (Overpass API) から取得
+const lmCache=JSON.parse(localStorage.getItem('lmCache3')||'{}');
+const OVERPASS=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter'];
+async function annotate(poleIdxs){
+  const need=poleIdxs.filter(i=>!(String(i) in lmCache));
+  need.forEach(i=>{const el=document.getElementById('lm'+i); if(el) el.textContent='　目印をさがしています…';});
+  if(need.length){
+    let q='[out:json][timeout:10];(';
+    need.forEach(i=>{const s=GD.stops[i];
+      q+='nwr(around:80,'+s[1]+','+s[2]+')["name"]["shop"];';
+      q+='nwr(around:80,'+s[1]+','+s[2]+')["name"]["amenity"]["amenity"!~"parking|vending_machine|bicycle_parking|toilets|waste_basket"];';
+    });
+    q+=');out center tags;';
+    let j=null;
+    for(const ep of OVERPASS){
+      try{
+        const r=await fetch(ep,{method:'POST',
+          headers:{'Content-Type':'application/x-www-form-urlencoded'},
+          body:'data='+encodeURIComponent(q)});
+        if(!r.ok){ console.warn('overpass status',r.status,ep); continue; }
+        j=await r.json(); break;
+      }catch(e){ console.warn('overpass error',ep,e); }
+    }
+    if(!j){
+      need.forEach(i=>{const el=document.getElementById('lm'+i); if(el) el.textContent='';});
+      return;
+    }
+    need.forEach(i=>{
+      const s=GD.stops[i];
+      let best=null,bd=1e9;
+      (j.elements||[]).forEach(e=>{
+        const la=(e.lat!=null)?e.lat:(e.center&&e.center.lat);
+        const lo=(e.lon!=null)?e.lon:(e.center&&e.center.lon);
+        if(la==null||lo==null)return;
+        const dd=dist(s[1],s[2],la,lo);
+        if(dd<bd&&dd<=80){bd=dd;best=e;}
+      });
+      lmCache[String(i)]=best?{n:best.tags.name,d:Math.round(bd)}:null;
+    });
+    localStorage.setItem('lmCache3',JSON.stringify(lmCache));
+  }
+  poleIdxs.forEach(i=>{
+    const lm=lmCache[String(i)];
+    const el=document.getElementById('lm'+i);
+    if(!lm){ if(el&&el.textContent.indexOf('さがして')>=0) el.textContent=''; return; }
+    const txt=lm.d<=50?'「'+lm.n+'」の前あたり':'「'+lm.n+'」の近く';
+    if(el) el.textContent='　目印：'+txt;
+    const mk=lmapMarkers[i];
+    if(mk&&mk.getPopup()) mk.setPopupContent(mk.getPopup().getContent()+'<br>目印：'+esc(txt));
+  });
+}
+
+render();
+</script>
+<!-- prototype v0.3: OSM map + landmarks -->
+</body>
+</html>
