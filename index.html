@@ -6,6 +6,8 @@
 <title>これ乗っていいの？ – 名古屋市バス</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet-gesture-handling@1.2.2/dist/leaflet-gesture-handling.min.css">
+<script src="https://unpkg.com/leaflet-gesture-handling@1.2.2/dist/leaflet-gesture-handling.min.js"></script>
 <style>
   :root{
     --blue:#1a6fd4; --green:#0d7a4f; --green-bg:#e3f4ec;
@@ -97,7 +99,7 @@
 
   <footer class="small">
     出典：名古屋市交通局「市バスGTFS-JPデータ」(CC BY 4.0) 2026年3月28日改正<br>
-    時刻表ベースの案内です。遅延には対応していません（プロトタイプ v0.5）。
+    時刻表ベースの案内です。遅延には対応していません（プロトタイプ v0.6）。
   </footer>
 </div>
 
@@ -382,7 +384,15 @@ function drawMap(spec){
   if(!el || !spec) return;
   if(!window.L){ el.innerHTML='<div class="small" style="padding:20px">地図の読み込みにはインターネット接続が必要です</div>'; return; }
   if(lmapObj){ lmapObj.remove(); lmapObj=null; }
-  const m=L.map(el);
+  // 1本指スクロールで地図が動かないように（プラグイン未読込なら普通の地図として動く）
+  const m=L.map(el,{
+    gestureHandling:true,
+    gestureHandlingOptions:{duration:1500, text:{
+      touch:'地図を動かすには指2本でさわってください',
+      scroll:'地図を拡大するには Ctrl キーを押しながらスクロール',
+      scrollMac:'地図を拡大するには ⌘ キーを押しながらスクロール'
+    }}
+  });
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',
     {maxZoom:19, attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors'}).addTo(m);
   const pts=[];
