@@ -246,6 +246,13 @@ function render(){
   // 各のりばを判定
   const verdicts=poles.map(pi=>({pi, ...judge(pi,dest,act,nowMin)}));
   const goodPoles=verdicts.filter(v=>v.ok.length>0);
+  // 各のりばの「いちばん早く目的地に着く便」を求め、到着が早い順（同着なら発車が早い順）に並べる
+  goodPoles.forEach(v=>{
+    let bt=null;
+    v.ok.forEach(b=>{ if(!bt || b.arr<bt.arr || (b.arr===bt.arr && b.t<bt.t)) bt=b; });
+    v.best=bt;
+  });
+  goodPoles.sort((a,b)=> a.best.arr-b.best.arr || a.best.t-b.best.t);
 
   let html='';
   let mapSpec=null;
@@ -301,9 +308,13 @@ function render(){
   if(poles.length>1){
     html+='<div class="card"><div class="label">🚏 待つ場所に注意！「'+esc(here)+'」にはのりばが'+poles.length+'か所あります</div>';
     let wrongPole = nearestPole!==null && !goodPoles.some(v=>v.pi===nearestPole) && poles.includes(nearestPole);
-    goodPoles.forEach(v=>{
+    goodPoles.forEach((v,vi)=>{
       const s=GD.stops[v.pi];
-      html+='<div style="margin:6px 0"><span class="pill ok">◎ '+poleLabel(v.pi)+'</span> で待ってください<span class="small" id="lm'+v.pi+'"></span>';
+      html+='<div style="margin:10px 0; padding-bottom:8px; border-bottom:1px dashed #ddd">';
+      html+='<span class="pill ok">◎ '+poleLabel(v.pi)+'</span>';
+      if(vi===0 && goodPoles.length>1) html+=' <span class="pill" style="background:#fff3cd; color:#8a6100">★いちばん早く着く</span>';
+      html+='<span class="small" id="lm'+v.pi+'"></span>';
+      html+='<div style="font-size:17px; margin-top:2px">'+fmt(v.best.t)+'発 →「'+esc(dest)+'」'+fmt(v.best.arr)+'着 <span class="small">['+esc(v.best.r)+'] '+esc(v.best.h)+'</span></div>';
       if(myPos){
         const dd=Math.round(dist(myPos.lat,myPos.lon,s[1],s[2]));
         if(dd>30) html+='<div class="move">→ ここから'+bearing(myPos.lat,myPos.lon,s[1],s[2])+'へ 約'+dd+'m</div>';
@@ -327,9 +338,9 @@ function render(){
     html+='</div>';
   }
 
-  // 乗るべきバス（最初のgoodのりばの直近便をLED表示）
-  const v0 = (nearestPole!==null && goodPoles.find(v=>v.pi===nearestPole)) || goodPoles[0];
-  const next=v0.ok[0];
+  // 乗るべきバス＝いちばん早く目的地に着く便（出発が早い順ではない！循環バス対策）
+  const v0 = goodPoles[0];
+  const next = v0.best;
   const hs=parseHS(next.h);
   const wait=next.t-nowMin;
   html+='<div class="card">';
@@ -338,10 +349,17 @@ function render(){
   if(hs.v) html+='<div class="via">'+esc(hs.v)+'</div>';
   html+='</div>';
   html+='<div style="text-align:center; margin-top:8px">'+fmt(next.t)+'発（あと約'+wait+'分）／「'+esc(dest)+'」には '+fmt(next.arr)+' ごろ着</div>';
+  const su=GD.stops[v0.pi][4];
+  if(su){
+    html+='<div class="small" style="text-align:center; margin-top:6px"><a class="link" target="_blank" href="https://map.kotsu.city.nagoya.jp/map/QR.jsp?from='+encodeURIComponent(su)+'">いまバスがどのへんに来ているか見る（市バス公式）</a><br>開いたら <b>「'+esc(next.r)+'」の「'+esc(hs.d)+'」行き</b> の行だけ見ればOKです</div>';
+  }
 
   html+='<div class="ok-title">◎ 乗ってOK（このあとの便）</div><div class="buslist ok">';
   v0.ok.slice(0,5).forEach(b=>{ const p=parseHS(b.h);
-    html+='<div><span class="t">'+fmt(b.t)+'</span><span class="rt">'+esc(b.r)+'</span>'+esc(p.d)+(p.v?' <span class="small">'+esc(p.v)+'</span>':'')+'</div>'; });
+    const slower = v0.ok.some(y=>y.t>b.t && y.arr<b.arr);
+    html+='<div><span class="t">'+fmt(b.t)+'</span><span class="rt">'+esc(b.r)+'</span>'+esc(p.d)+(p.v?' <span class="small">'+esc(p.v)+'</span>':'')
+      +' <span class="small">→ '+fmt(b.arr)+'着</span>'
+      +(slower?' <span class="pill ng" style="font-size:12px; padding:0 8px">⏳遠回り</span>':'')+'</div>'; });
   html+='</div>';
 
   if(v0.ng.length){
