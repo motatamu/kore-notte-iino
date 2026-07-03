@@ -19,7 +19,11 @@
        font-family:"Hiragino Sans","Yu Gothic UI","Meiryo",sans-serif; font-size:18px; line-height:1.6;}
   .wrap{max-width:520px; margin:0 auto; padding:16px 14px 60px;}
   h1{font-size:22px; margin:8px 0 2px; text-align:center;}
-  .sub{text-align:center; color:var(--muted); font-size:13px; margin:0 0 18px;}
+  .sub{text-align:center; color:var(--muted); font-size:13px; margin:0 0 10px;}
+  #langbar{text-align:center; margin-bottom:14px;}
+  #langbar button{font-size:13px; padding:4px 10px; margin:2px; border:1px solid #ccc;
+       border-radius:16px; background:#fff; cursor:pointer;}
+  #langbar button.on{background:var(--blue); color:#fff; border-color:var(--blue); font-weight:700;}
   .card{background:var(--card); border-radius:16px; padding:16px; margin-bottom:14px;
         box-shadow:0 1px 3px rgba(0,0,0,.08);}
   .label{font-size:15px; color:var(--muted); margin-bottom:6px;}
@@ -39,6 +43,7 @@
   .led .num{font-size:34px;} .led .dest{font-size:40px; letter-spacing:.08em;}
   .led .via{font-size:16px; margin-top:2px;}
   .led .num,.led .dest,.led .via{color:var(--led); font-family:"Hiragino Kaku Gothic Std","Yu Gothic",sans-serif; font-weight:800;}
+  .romaji{text-align:center; font-size:15px; color:var(--muted); margin-top:6px;}
   .ok-title{color:var(--green); font-weight:700; font-size:18px; margin:14px 0 6px;}
   .ng-title{color:var(--red); font-weight:700; font-size:18px; margin:14px 0 6px;}
   .buslist{border-radius:10px; padding:8px 12px; font-size:18px;}
@@ -50,7 +55,6 @@
       padding:0 6px; font-size:15px; margin-right:6px;}
   .warn{background:#fff5d6; border:2px solid #e5b100; border-radius:12px; padding:14px; font-size:19px; font-weight:700;}
   .move{font-size:26px; color:var(--blue);}
-  .polemap{width:100%; height:auto; background:#f7f6f2; border-radius:10px; margin-top:8px;}
   .pill{display:inline-block; border-radius:20px; padding:2px 12px; font-size:15px; font-weight:700;}
   .pill.ok{background:var(--green-bg); color:var(--green);} .pill.ng{background:var(--red-bg); color:var(--red);}
   .small{font-size:13px; color:var(--muted);}
@@ -64,14 +68,14 @@
 <body>
 <div class="wrap">
   <h1>🚌 これ乗っていいの？</h1>
-  <p class="sub">名古屋市バス版プロトタイプ</p>
+  <p class="sub" id="sub">名古屋市バス版プロトタイプ</p>
+  <div id="langbar"></div>
 
-  <!-- STEP 1: 降りたいバス停 -->
   <div class="card" id="cardDest">
-    <div class="step"><div class="stepnum">1</div><div class="label" style="margin:0">降りたいバス停（目的地）</div></div>
+    <div class="step"><div class="stepnum">1</div><div class="label" style="margin:0" id="lblStep1">降りたいバス停（目的地）</div></div>
     <div id="destShow" style="display:none">
       <span class="bigval" id="destName"></span>
-      <button class="btn btn-gray" onclick="resetDest()">変更する</button>
+      <button class="btn btn-gray chg" onclick="resetDest()">変更する</button>
     </div>
     <div id="destPick">
       <input type="text" id="destInput" placeholder="例：四軒家" oninput="suggest('dest')">
@@ -79,16 +83,15 @@
     </div>
   </div>
 
-  <!-- STEP 2: いまいるバス停 -->
   <div class="card" id="cardHere">
-    <div class="step"><div class="stepnum">2</div><div class="label" style="margin:0">いまいるバス停</div></div>
+    <div class="step"><div class="stepnum">2</div><div class="label" style="margin:0" id="lblStep2">いまいるバス停</div></div>
     <div id="hereShow" style="display:none">
       <span class="bigval" id="hereName"></span>
-      <button class="btn btn-gray" onclick="resetHere()">変更する</button>
+      <button class="btn btn-gray chg" onclick="resetHere()">変更する</button>
     </div>
     <div id="herePick">
-      <button class="btn btn-blue" onclick="useGPS()">📍 いまの場所からさがす</button>
-      <div class="small" style="text-align:center; margin:8px 0 4px">または名前でさがす</div>
+      <button class="btn btn-blue" id="btnGps" onclick="useGPS()">📍 いまの場所からさがす</button>
+      <div class="small" style="text-align:center; margin:8px 0 4px" id="lblOr">または名前でさがす</div>
       <input type="text" id="hereInput" placeholder="例：守山プール" oninput="suggest('here')">
       <div class="suggest" id="hereSug"></div>
       <div class="small" id="gpsMsg"></div>
@@ -99,29 +102,222 @@
 
   <footer class="small">
     出典：名古屋市交通局「市バスGTFS-JPデータ」(CC BY 4.0) 2026年3月28日改正<br>
-    時刻表ベースの案内です。遅延には対応していません（プロトタイプ v0.7）。
+    <span id="footNote">時刻表ベースの案内です。遅延には対応していません（プロトタイプ v0.8）。</span>
   </footer>
 </div>
 
-<script src="data.js?v=5"></script>
+<script src="data.js?v=8"></script>
 <script>
 const GD = window.GD;
+
+// ================== 多言語辞書 ==================
+const LANGS=[['ja','日本語'],['en','English'],['zh','中文'],['ko','한국어'],['vi','Tiếng Việt'],['id','Indonesia'],['tl','Filipino']];
+const I18N={
+ja:{sub:'名古屋市バス版プロトタイプ',step1:'降りたいバス停（目的地）',step2:'いまいるバス停',change:'変更する',
+ph1:'例：四軒家',ph2:'例：守山プール',gps:'📍 いまの場所からさがす',orname:'または名前でさがす',
+locating:'位置を取得中…',noloc:'位置情報が使えません。名前でさがしてください。',nostop:'近く(800m以内)にバス停が見つかりませんでした。名前でさがしてください。',
+notfound:'その名前は見つかりません。似た名前のバス停：',same:'目的地といまの場所が同じです 😊',
+nodirect:'😢 この時間、「{0}」から「{1}」へ直接行くバスはありません。',walkable:'🚶 でも、歩いて行ける近くのバス停から乗れます！',
+towalk:'{0}へ約{1}m（徒歩{2}分）・{3}発に間に合います',tapswitch:'押すと、そのバス停からの案内に切りかわります。',
+nowalk:'歩ける範囲（800m）にも直行できるバス停が見つかりませんでした。',
+transfer:'🚌 乗りかえで行く（Googleマップを開く）',transfernote:'ここから「{0}」までの乗換案内をGoogleマップで表示します',
+walknote:'🚶 「{0}」まで歩く時間（約{1}分）を見込んで、間に合う便だけ表示しています。',
+polecare:'🚏 待つ場所に注意！「{0}」にはのりばが{1}か所あります',pole:'のりば{0}',waithere:' で待ってください',
+fastest:'★いちばん早く着く',notcome:'には来ません',wrongpole:'⚠️ いまいる{0}には「{1}」へ行くバスは来ません！',
+lmnear:'目印：「{0}」の前あたり',lmnear2:'目印：「{0}」の近く',lmsearch:'目印をさがしています…',
+gohere:'→ ここから{0}へ 約{1}m',okhere:'→ 今いる場所でOKです！',gmapwalk:'Googleマップで道順を見る',
+face:'この「顔」のバスに乗ってください（{0}）',deparr:'{0}発（あと約{1}分）／「{2}」には {3} ごろ着',
+where:'いまバスがどのへんに来ているか見る（市バス公式）',wherenote:'開いたら「{0}」の「{1}」行きの行だけ見ればOKです',
+oklist:'◎ 乗ってOK（このあとの便）',arr:'→ {0}着',slow:'⏳遠回り',nglist:'✕ 同じのりばに来ても乗らないで',
+allok:'✓ {0}に来るバスは全部「{1}」に行きます。安心して乗ってください。',
+foot:'時刻表ベースの案内です。遅延には対応していません（プロトタイプ v0.8）。',needsnet:'地図の読み込みにはインターネット接続が必要です',
+dirs:['北','北東','東','南東','南','南西','西','北西'],via:'{0}',
+pwait:'◎ ここで待つ',pnot:'✕ 来ません',pwalk:'徒歩約{0}分',pgmap:'Googleマップで道順',mehere:'いまここ',
+gtouch:'地図を動かすには指2本でさわってください',gscroll:'地図を拡大するには Ctrl キーを押しながらスクロール',gscrollmac:'地図を拡大するには ⌘ キーを押しながらスクロール'},
+en:{sub:'Nagoya City Bus — prototype',step1:'Bus stop where you get OFF (destination)',step2:'Bus stop where you are NOW',change:'Change',
+ph1:'e.g. Sakae',ph2:'e.g. Nagoya Sta.',gps:'📍 Find from my location',orname:'or search by name',
+locating:'Getting your location…',noloc:'Location unavailable. Please search by name.',nostop:'No bus stop found within 800 m. Please search by name.',
+notfound:'Name not found. Similar bus stops:',same:'Your destination is where you already are 😊',
+nodirect:'😢 No direct bus from "{0}" to "{1}" at this time.',walkable:'🚶 But you can catch one at a nearby stop!',
+towalk:'About {1} m {0} (walk {2} min) — catches the {3} bus',tapswitch:'Tap to see guidance from that stop.',
+nowalk:'No direct stop within walking range (800 m) either.',
+transfer:'🚌 Go with transfers (open Google Maps)',transfernote:'Opens transit directions from here to "{0}" in Google Maps',
+walknote:'🚶 Walking time to "{0}" (about {1} min) is included — only buses you can catch are shown.',
+polecare:'🚏 Watch where you wait! "{0}" has {1} boarding points',pole:'Stop #{0}',waithere:' — wait here',
+fastest:'★Arrives earliest',notcome:'no bus to your destination',wrongpole:'⚠️ No bus to "{1}" comes to {0} where you are!',
+lmnear:'Landmark: right by "{0}"',lmnear2:'Landmark: near "{0}"',lmsearch:'Looking for a landmark…',
+gohere:'→ Go {0}, about {1} m',okhere:'→ You are at the right spot!',gmapwalk:'Walking directions (Google Maps)',
+face:'Board the bus with this "face" ({0})',deparr:'Departs {0} (in about {1} min) / arrives at "{2}" around {3}',
+where:'See where the bus is now (official site)',wherenote:'On that page, just look for the "{0}" bus bound for "{1}"',
+oklist:'◎ OK to board (upcoming buses)',arr:'→ arr. {0}',slow:'⏳detour',nglist:'✕ Do NOT board these (they also stop here)',
+allok:'✓ Every bus at {0} goes to "{1}". Board with confidence!',
+foot:'Timetable-based guidance. Delays are not reflected (prototype v0.8).',needsnet:'Internet connection is needed to load the map',
+dirs:['north','northeast','east','southeast','south','southwest','west','northwest'],via:'via {0}',
+pwait:'◎ Wait here',pnot:'✕ Not your bus stop',pwalk:'about {0} min walk',pgmap:'Directions (Google Maps)',mehere:'You are here',
+gtouch:'Use two fingers to move the map',gscroll:'Use Ctrl + scroll to zoom the map',gscrollmac:'Use ⌘ + scroll to zoom the map'},
+zh:{sub:'名古屋市营巴士 — 测试版',step1:'要下车的巴士站（目的地）',step2:'现在所在的巴士站',change:'更改',
+ph1:'例：栄 (Sakae)',ph2:'例：名古屋駅',gps:'📍 从当前位置查找',orname:'或按名称搜索',
+locating:'正在获取位置…',noloc:'无法获取位置信息，请按名称搜索。',nostop:'800米内未找到巴士站，请按名称搜索。',
+notfound:'未找到该名称。相似的巴士站：',same:'目的地与当前位置相同 😊',
+nodirect:'😢 现在没有从「{0}」直达「{1}」的巴士。',walkable:'🚶 不过，附近的巴士站有车可乘！',
+towalk:'向{0}约{1}米（步行{2}分钟）・赶得上{3}发车的班次',tapswitch:'点按即可切换到该巴士站的指引。',
+nowalk:'步行范围内（800米）也没有直达的巴士站。',
+transfer:'🚌 换乘前往（打开谷歌地图）',transfernote:'在谷歌地图中显示从这里到「{0}」的换乘路线',
+walknote:'🚶 已考虑步行到「{0}」的时间（约{1}分钟），只显示来得及的班次。',
+polecare:'🚏 注意候车位置！「{0}」有{1}个乘车点',pole:'{0}号乘车点',waithere:' — 请在此候车',
+fastest:'★最早到达',notcome:'没有前往目的地的巴士',wrongpole:'⚠️ 您所在的{0}没有开往「{1}」的巴士！',
+lmnear:'地标：「{0}」前',lmnear2:'地标：「{0}」附近',lmsearch:'正在查找地标…',
+gohere:'→ 向{0}约{1}米',okhere:'→ 您已在正确位置！',gmapwalk:'步行路线（谷歌地图）',
+face:'请乘坐显示这个“面孔”的巴士（{0}）',deparr:'{0}发车（约{1}分钟后）／约{3}到达「{2}」',
+where:'查看巴士当前位置（官方网站）',wherenote:'打开后只需查看「{0}」开往「{1}」的那一行',
+oklist:'◎ 可以乘坐（之后的班次）',arr:'→ {0}到达',slow:'⏳绕远',nglist:'✕ 请勿乘坐这些车（也停靠此站）',
+allok:'✓ {0}的所有巴士都开往「{1}」，请放心乘坐。',
+foot:'基于时刻表，不反映延误（测试版 v0.8）。',needsnet:'加载地图需要网络连接',
+dirs:['北','东北','东','东南','南','西南','西','西北'],via:'经由{0}',
+pwait:'◎ 在此候车',pnot:'✕ 不去目的地',pwalk:'步行约{0}分钟',pgmap:'路线（谷歌地图）',mehere:'当前位置',
+gtouch:'请用两根手指移动地图',gscroll:'按住 Ctrl 并滚动以缩放地图',gscrollmac:'按住 ⌘ 并滚动以缩放地图'},
+ko:{sub:'나고야 시영버스 — 프로토타입',step1:'내릴 버스 정류장(목적지)',step2:'지금 있는 버스 정류장',change:'변경',
+ph1:'예: 栄 (Sakae)',ph2:'예: 名古屋駅',gps:'📍 현재 위치에서 찾기',orname:'또는 이름으로 검색',
+locating:'위치 확인 중…',noloc:'위치 정보를 사용할 수 없습니다. 이름으로 검색해 주세요.',nostop:'800m 이내에 정류장이 없습니다. 이름으로 검색해 주세요.',
+notfound:'해당 이름을 찾을 수 없습니다. 비슷한 정류장:',same:'목적지와 현재 위치가 같습니다 😊',
+nodirect:'😢 지금은 「{0}」에서 「{1}」(으)로 바로 가는 버스가 없습니다.',walkable:'🚶 하지만 근처 정류장에서 탈 수 있어요!',
+towalk:'{0}쪽으로 약 {1}m (도보 {2}분) · {3} 출발 버스를 탈 수 있습니다',tapswitch:'누르면 해당 정류장 안내로 전환됩니다.',
+nowalk:'도보 범위(800m) 안에도 직행 정류장이 없습니다.',
+transfer:'🚌 환승으로 가기 (구글 지도 열기)',transfernote:'여기에서 「{0}」까지의 환승 경로를 구글 지도에 표시합니다',
+walknote:'🚶 「{0}」까지 걷는 시간(약 {1}분)을 감안해 탈 수 있는 버스만 표시합니다.',
+polecare:'🚏 기다리는 위치 주의! 「{0}」에는 승차장이 {1}곳 있습니다',pole:'{0}번 승차장',waithere:' — 여기서 기다리세요',
+fastest:'★가장 빨리 도착',notcome:'목적지행 버스 없음',wrongpole:'⚠️ 지금 있는 {0}에는 「{1}」행 버스가 오지 않습니다!',
+lmnear:'표지: 「{0}」 바로 앞',lmnear2:'표지: 「{0}」 근처',lmsearch:'표지를 찾는 중…',
+gohere:'→ {0}쪽으로 약 {1}m',okhere:'→ 지금 계신 곳이 맞습니다!',gmapwalk:'도보 경로 (구글 지도)',
+face:'이 "얼굴"의 버스를 타세요 ({0})',deparr:'{0} 출발 (약 {1}분 후) / 「{2}」에 {3}쯤 도착',
+where:'버스가 지금 어디쯤인지 보기 (공식)',wherenote:'열리면 「{0}」의 「{1}」행 줄만 보면 됩니다',
+oklist:'◎ 타도 되는 버스 (이후 편)',arr:'→ {0} 도착',slow:'⏳우회',nglist:'✕ 타면 안 되는 버스 (같은 승차장에 옵니다)',
+allok:'✓ {0}에 오는 버스는 모두 「{1}」에 갑니다. 안심하고 타세요.',
+foot:'시간표 기준 안내이며 지연은 반영되지 않습니다 (프로토타입 v0.8).',needsnet:'지도를 불러오려면 인터넷 연결이 필요합니다',
+dirs:['북','북동','동','남동','남','남서','서','북서'],via:'{0} 경유',
+pwait:'◎ 여기서 대기',pnot:'✕ 목적지행 아님',pwalk:'도보 약 {0}분',pgmap:'경로 (구글 지도)',mehere:'현재 위치',
+gtouch:'지도를 움직이려면 두 손가락을 사용하세요',gscroll:'Ctrl + 스크롤로 지도 확대/축소',gscrollmac:'⌘ + 스크롤로 지도 확대/축소'},
+vi:{sub:'Xe buýt TP Nagoya — bản thử nghiệm',step1:'Trạm bạn muốn XUỐNG (điểm đến)',step2:'Trạm bạn đang đứng',change:'Thay đổi',
+ph1:'VD: 栄 (Sakae)',ph2:'VD: 名古屋駅',gps:'📍 Tìm từ vị trí hiện tại',orname:'hoặc tìm theo tên',
+locating:'Đang xác định vị trí…',noloc:'Không dùng được định vị. Hãy tìm theo tên.',nostop:'Không thấy trạm nào trong vòng 800 m. Hãy tìm theo tên.',
+notfound:'Không tìm thấy tên này. Các trạm tương tự:',same:'Điểm đến trùng với nơi bạn đang đứng 😊',
+nodirect:'😢 Hiện không có xe buýt đi thẳng từ "{0}" đến "{1}".',walkable:'🚶 Nhưng bạn có thể đón xe ở trạm gần đây!',
+towalk:'Khoảng {1} m về hướng {0} (đi bộ {2} phút) · kịp chuyến {3}',tapswitch:'Chạm để xem hướng dẫn từ trạm đó.',
+nowalk:'Trong phạm vi đi bộ (800 m) cũng không có trạm đi thẳng.',
+transfer:'🚌 Đi bằng cách chuyển tuyến (mở Google Maps)',transfernote:'Mở lộ trình chuyển tuyến từ đây đến "{0}" trên Google Maps',
+walknote:'🚶 Đã tính thời gian đi bộ đến "{0}" (khoảng {1} phút), chỉ hiện các chuyến kịp giờ.',
+polecare:'🚏 Chú ý chỗ đứng chờ! "{0}" có {1} điểm đón',pole:'Điểm đón số {0}',waithere:' — hãy chờ ở đây',
+fastest:'★Đến sớm nhất',notcome:'không có xe đến điểm đến',wrongpole:'⚠️ {0} nơi bạn đứng KHÔNG có xe đi "{1}"!',
+lmnear:'Mốc: ngay trước "{0}"',lmnear2:'Mốc: gần "{0}"',lmsearch:'Đang tìm mốc…',
+gohere:'→ Đi về hướng {0} khoảng {1} m',okhere:'→ Bạn đang đứng đúng chỗ!',gmapwalk:'Chỉ đường đi bộ (Google Maps)',
+face:'Hãy lên xe buýt có "khuôn mặt" này ({0})',deparr:'Khởi hành {0} (còn khoảng {1} phút) / đến "{2}" khoảng {3}',
+where:'Xem xe buýt đang ở đâu (trang chính thức)',wherenote:'Mở trang, chỉ cần xem dòng xe "{0}" đi "{1}"',
+oklist:'◎ Có thể lên (các chuyến sắp tới)',arr:'→ đến {0}',slow:'⏳đường vòng',nglist:'✕ ĐỪNG lên các xe này (cũng dừng ở đây)',
+allok:'✓ Mọi xe đến {0} đều đi "{1}". Cứ yên tâm lên xe!',
+foot:'Theo lịch trình, chưa phản ánh chậm trễ (bản thử v0.8).',needsnet:'Cần kết nối Internet để tải bản đồ',
+dirs:['bắc','đông bắc','đông','đông nam','nam','tây nam','tây','tây bắc'],via:'qua {0}',
+pwait:'◎ Chờ ở đây',pnot:'✕ Không đi điểm đến',pwalk:'đi bộ khoảng {0} phút',pgmap:'Chỉ đường (Google Maps)',mehere:'Bạn đang ở đây',
+gtouch:'Dùng hai ngón tay để di chuyển bản đồ',gscroll:'Giữ Ctrl và cuộn để thu phóng',gscrollmac:'Giữ ⌘ và cuộn để thu phóng'},
+id:{sub:'Bus Kota Nagoya — prototipe',step1:'Halte tempat Anda TURUN (tujuan)',step2:'Halte tempat Anda sekarang',change:'Ubah',
+ph1:'cth: 栄 (Sakae)',ph2:'cth: 名古屋駅',gps:'📍 Cari dari lokasi saya',orname:'atau cari berdasarkan nama',
+locating:'Mengambil lokasi…',noloc:'Lokasi tidak tersedia. Silakan cari berdasarkan nama.',nostop:'Tidak ada halte dalam radius 800 m. Silakan cari berdasarkan nama.',
+notfound:'Nama tidak ditemukan. Halte yang mirip:',same:'Tujuan sama dengan lokasi Anda sekarang 😊',
+nodirect:'😢 Saat ini tidak ada bus langsung dari "{0}" ke "{1}".',walkable:'🚶 Tapi Anda bisa naik dari halte terdekat!',
+towalk:'Sekitar {1} m ke arah {0} (jalan {2} menit) · terkejar bus pukul {3}',tapswitch:'Ketuk untuk beralih ke panduan dari halte itu.',
+nowalk:'Dalam jarak jalan kaki (800 m) juga tidak ada halte langsung.',
+transfer:'🚌 Pergi dengan transit (buka Google Maps)',transfernote:'Membuka rute transit dari sini ke "{0}" di Google Maps',
+walknote:'🚶 Waktu jalan kaki ke "{0}" (sekitar {1} menit) sudah dihitung; hanya bus yang terkejar yang tampil.',
+polecare:'🚏 Perhatikan tempat menunggu! "{0}" punya {1} titik naik',pole:'Titik naik {0}',waithere:' — tunggu di sini',
+fastest:'★Tiba paling cepat',notcome:'tidak ada bus ke tujuan',wrongpole:'⚠️ Di {0} tempat Anda sekarang TIDAK ada bus ke "{1}"!',
+lmnear:'Penanda: tepat di depan "{0}"',lmnear2:'Penanda: dekat "{0}"',lmsearch:'Mencari penanda…',
+gohere:'→ Jalan ke arah {0} sekitar {1} m',okhere:'→ Anda sudah di tempat yang benar!',gmapwalk:'Rute jalan kaki (Google Maps)',
+face:'Naiklah bus dengan "wajah" ini ({0})',deparr:'Berangkat {0} (sekitar {1} menit lagi) / tiba di "{2}" sekitar {3}',
+where:'Lihat posisi bus sekarang (situs resmi)',wherenote:'Di halaman itu, cukup lihat baris bus "{0}" jurusan "{1}"',
+oklist:'◎ Boleh naik (bus berikutnya)',arr:'→ tiba {0}',slow:'⏳memutar',nglist:'✕ JANGAN naik bus ini (berhenti di sini juga)',
+allok:'✓ Semua bus di {0} menuju "{1}". Naik saja dengan tenang!',
+foot:'Berdasarkan jadwal; keterlambatan tidak tercermin (prototipe v0.8).',needsnet:'Perlu koneksi internet untuk memuat peta',
+dirs:['utara','timur laut','timur','tenggara','selatan','barat daya','barat','barat laut'],via:'lewat {0}',
+pwait:'◎ Tunggu di sini',pnot:'✕ Tidak ke tujuan',pwalk:'jalan sekitar {0} menit',pgmap:'Rute (Google Maps)',mehere:'Anda di sini',
+gtouch:'Gunakan dua jari untuk menggeser peta',gscroll:'Ctrl + gulir untuk zoom',gscrollmac:'⌘ + gulir untuk zoom'},
+tl:{sub:'Nagoya City Bus — prototype',step1:'Hintuan kung saan ka BABABA (destinasyon)',step2:'Hintuan kung nasaan ka ngayon',change:'Palitan',
+ph1:'hal: 栄 (Sakae)',ph2:'hal: 名古屋駅',gps:'📍 Hanapin mula sa lokasyon ko',orname:'o maghanap gamit ang pangalan',
+locating:'Kinukuha ang lokasyon…',noloc:'Hindi magamit ang lokasyon. Maghanap gamit ang pangalan.',nostop:'Walang hintuan sa loob ng 800 m. Maghanap gamit ang pangalan.',
+notfound:'Hindi nakita ang pangalan. Mga katulad na hintuan:',same:'Pareho ang destinasyon at kinaroroonan mo 😊',
+nodirect:'😢 Walang direktang bus mula "{0}" papuntang "{1}" sa oras na ito.',walkable:'🚶 Pero may masasakyan ka sa kalapit na hintuan!',
+towalk:'Mga {1} m pa-{0} (lakad {2} min) · aabutan ang biyaheng {3}',tapswitch:'I-tap para sa gabay mula sa hintuang iyon.',
+nowalk:'Wala ring direktang hintuan sa lakarang distansya (800 m).',
+transfer:'🚌 Mag-transfer (buksan ang Google Maps)',transfernote:'Bubuksan ang transit na ruta mula rito papuntang "{0}" sa Google Maps',
+walknote:'🚶 Kasama na ang lakad papuntang "{0}" (mga {1} min); mga aabutang bus lang ang ipinapakita.',
+polecare:'🚏 Ingat sa paghihintayan! May {1} sakayan ang "{0}"',pole:'Sakayan {0}',waithere:' — dito maghintay',
+fastest:'★Pinakamaagang dating',notcome:'walang bus sa destinasyon',wrongpole:'⚠️ Sa {0} kung nasaan ka, WALANG bus papuntang "{1}"!',
+lmnear:'Palatandaan: sa harap mismo ng "{0}"',lmnear2:'Palatandaan: malapit sa "{0}"',lmsearch:'Naghahanap ng palatandaan…',
+gohere:'→ Maglakad pa-{0} nang mga {1} m',okhere:'→ Nasa tamang lugar ka na!',gmapwalk:'Lakad na direksyon (Google Maps)',
+face:'Sumakay sa bus na may ganitong "mukha" ({0})',deparr:'Aalis {0} (mga {1} min pa) / darating sa "{2}" bandang {3}',
+where:'Tingnan kung nasaan na ang bus (opisyal)',wherenote:'Sa page na iyon, tingnan lang ang linyang "{0}" papuntang "{1}"',
+oklist:'◎ Puwedeng sakyan (mga susunod na biyahe)',arr:'→ dating {0}',slow:'⏳paikot',nglist:'✕ HUWAG sakyan ang mga ito (humihinto rin dito)',
+allok:'✓ Lahat ng bus sa {0} ay papuntang "{1}". Sakay lang nang panatag!',
+foot:'Batay sa timetable; hindi kasama ang delay (prototype v0.8).',needsnet:'Kailangan ng internet para sa mapa',
+dirs:['hilaga','hilagang-silangan','silangan','timog-silangan','timog','timog-kanluran','kanluran','hilagang-kanluran'],via:'daan sa {0}',
+pwait:'◎ Maghintay dito',pnot:'✕ Hindi papunta sa destinasyon',pwalk:'mga {0} min lakad',pgmap:'Direksyon (Google Maps)',mehere:'Nandito ka',
+gtouch:'Gumamit ng dalawang daliri para igalaw ang mapa',gscroll:'Ctrl + scroll para mag-zoom',gscrollmac:'⌘ + scroll para mag-zoom'}
+};
+let lang = localStorage.getItem('lang') || 'ja';
+if(!I18N[lang]) lang='ja';
+function t(k){
+  let s=(I18N[lang]&&I18N[lang][k]!==undefined)?I18N[lang][k]:I18N.ja[k];
+  for(let i=1;i<arguments.length;i++){ s=s.split('{'+(i-1)+'}').join(arguments[i]); }
+  return s;
+}
+// バス停名の表示：日本語以外ではローマ字を併記（現地の表示は日本語なので両方見せる）
+function sn(name){
+  if(lang==='ja') return name;
+  const e=GD.en&&GD.en[name];
+  return e? name+' ('+e+')' : name;
+}
+function enOf(name){ return (GD.en&&GD.en[name])||''; }
+
+function setLang(l){
+  lang=l; localStorage.setItem('lang',l);
+  applyStatic(); render();
+}
+function applyStatic(){
+  document.getElementById('sub').textContent=t('sub');
+  document.getElementById('lblStep1').textContent=t('step1');
+  document.getElementById('lblStep2').textContent=t('step2');
+  document.getElementById('btnGps').textContent=t('gps');
+  document.getElementById('lblOr').textContent=t('orname');
+  document.getElementById('destInput').placeholder=t('ph1');
+  document.getElementById('hereInput').placeholder=t('ph2');
+  document.getElementById('footNote').textContent=t('foot');
+  document.querySelectorAll('.chg').forEach(b=>{ b.textContent=t('change'); });
+  const bar=document.getElementById('langbar');
+  bar.innerHTML='';
+  LANGS.forEach(([code,label])=>{
+    const b=document.createElement('button');
+    b.textContent=label;
+    if(code===lang) b.className='on';
+    b.onclick=()=>setLang(code);
+    bar.appendChild(b);
+  });
+}
+
+// ================== データ索引 ==================
 const nameToPoles = {};
 GD.stops.forEach((s,i)=>{ (nameToPoles[s[0]] = nameToPoles[s[0]]||[]).push(i); });
 const stopNames = Object.keys(nameToPoles);
 
-// のりば別 通過trip索引
 const poleTrips = {};
-GD.patterns.forEach((pat,pi)=>{ pat.forEach(si=>{ (poleTrips[si]=poleTrips[si]||new Set()); }); });
-GD.trips.forEach((t,ti)=>{ GD.patterns[t[1]].forEach(si=>poleTrips[si].add(ti)); });
+GD.trips.forEach((t2,ti)=>{ GD.patterns[t2[1]].forEach(si=>{ (poleTrips[si]=poleTrips[si]||new Set()).add(ti); }); });
 
 let dest = localStorage.getItem('dest') || null;
-let here = null;           // バス停名
-let myPos = null;          // {lat,lon} GPS取得時のみ
-let nearestPole = null;    // GPS時の最寄りのりばindex
+let here = null;
+let myPos = null;
+let nearestPole = null;
+let walkMin = 0;
 
-function esc(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 
+// ================== 検索（漢字・ひらがな・カタカナ・ローマ字・あいまい） ==================
 function toHira(s){ return s.replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60)); }
 function fuzzy(q){
   const qs=[...q], qh=[...toHira(q)];
@@ -139,31 +335,31 @@ function suggest(kind){
   const box = document.getElementById(kind+'Sug');
   box.innerHTML='';
   if(q.length<1) return;
-  const qh = toHira(q);
-  let hits = stopNames.filter(n=>n.includes(q) || (GD.yomi[n]||'').includes(qh)).slice(0,8);
+  const qh = toHira(q), ql = q.toLowerCase();
+  let hits = stopNames.filter(n=> n.includes(q) || (GD.yomi[n]||'').includes(qh) || enOf(n).toLowerCase().includes(ql) ).slice(0,8);
   if(hits.length===0 && q.length>=2){
     hits = fuzzy(q);
     if(hits.length){
       const note=document.createElement('div');
       note.className='small';
-      note.textContent='その名前は見つかりません。似た名前のバス停：';
+      note.textContent=t('notfound');
       box.appendChild(note);
     }
   }
   hits.forEach(n=>{
     const b=document.createElement('button');
-    b.textContent=n;
+    b.textContent=sn(n);
     b.onclick=()=>{ kind==='dest'?setDest(n):setHere(n,null); };
     box.appendChild(b);
   });
 }
-let walkMin = 0; // 近隣バス停へ徒歩移動する場合の所要分
 function setDest(n){ dest=n; localStorage.setItem('dest',n); render(); }
 function resetDest(){ dest=null; localStorage.removeItem('dest'); render(); }
 function setHere(n,pole){ here=n; nearestPole=pole; walkMin=0; render(); }
 function resetHere(){ here=null; nearestPole=null; myPos=null; walkMin=0; render(); }
 function goNearby(pi,w){ here=GD.stops[pi][0]; nearestPole=pi; walkMin=w; render(); window.scrollTo(0,0); }
 
+// ================== 地理計算 ==================
 function dist(la1,lo1,la2,lo2){
   const R=6371000, d=Math.PI/180;
   const a=Math.sin((la2-la1)*d/2)**2 + Math.cos(la1*d)*Math.cos(la2*d)*Math.sin((lo2-lo1)*d/2)**2;
@@ -174,33 +370,32 @@ function bearing(la1,lo1,la2,lo2){
   const y=Math.sin((lo2-lo1)*d)*Math.cos(la2*d);
   const x=Math.cos(la1*d)*Math.sin(la2*d)-Math.sin(la1*d)*Math.cos(la2*d)*Math.cos((lo2-lo1)*d);
   const deg=(Math.atan2(y,x)*180/Math.PI+360)%360;
-  return ['北','北東','東','南東','南','南西','西','北西'][Math.round(deg/45)%8];
+  return t('dirs')[Math.round(deg/45)%8];
 }
 
 function useGPS(){
   const msg=document.getElementById('gpsMsg');
-  msg.textContent='位置を取得中…';
+  msg.textContent=t('locating');
   navigator.geolocation.getCurrentPosition(p=>{
     myPos={lat:p.coords.latitude, lon:p.coords.longitude};
     let best=-1,bd=1e9;
     GD.stops.forEach((s,i)=>{ const dd=dist(myPos.lat,myPos.lon,s[1],s[2]); if(dd<bd){bd=dd;best=i;} });
-    if(bd>800){ msg.textContent='近く(800m以内)にバス停が見つかりませんでした。名前でさがしてください。'; return; }
+    if(bd>800){ msg.textContent=t('nostop'); return; }
     setHere(GD.stops[best][0], best);
-  }, e=>{ msg.textContent='位置情報が使えません。名前でさがしてください。'; });
+  }, e=>{ msg.textContent=t('noloc'); });
 }
 
+// ================== ダイヤ判定 ==================
 function activeServices(dateObj){
   const y=dateObj.getFullYear(), m=('0'+(dateObj.getMonth()+1)).slice(-2), dd=('0'+dateObj.getDate()).slice(-2);
   const key=''+y+m+dd;
-  const dow=(dateObj.getDay()+6)%7; // 月=0…日=6
+  const dow=(dateObj.getDay()+6)%7;
   const act=new Set();
   GD.calendar.forEach((days,i)=>{ if(days[dow]) act.add(i); });
   const ex=GD.calendarDates[key];
   if(ex){ ex.add.forEach(i=>act.add(i)); ex.del.forEach(i=>act.delete(i)); }
   return act;
 }
-
-// のりばpoleIdxで待つとき：destNameへ行くOK便 / 行かないNG便
 function judge(poleIdx, destName, act, nowMin){
   const destSet=new Set(nameToPoles[destName]);
   const ok=[], ng=new Map();
@@ -224,31 +419,42 @@ function judge(poleIdx, destName, act, nowMin){
 
 function fmt(min){ let h=Math.floor(min/60); if(h>=24)h-=24; return ('0'+h).slice(-2)+':'+('0'+min%60).slice(-2); }
 function parseHS(h){ const m=h.match(/^(.+?)（(.+)）$/); return m?{d:m[1],v:m[2]}:{d:h,v:''}; }
+function poleLabel(i){ const pc=GD.stops[i][3]; return t('pole', pc||'?'); }
+// 行先のローマ字（日本語以外のとき）
+function romajiHS(hs){
+  if(lang==='ja') return '';
+  const ed=enOf(hs.d);
+  if(!ed) return '';
+  let ev='';
+  if(hs.v){
+    const vn=hs.v.replace(/経由.*$/,'').trim();
+    const e2=enOf(vn);
+    if(e2) ev=' '+t('via',e2);
+  }
+  return ed+ev;
+}
 
-function poleLabel(i){ const pc=GD.stops[i][3]; return pc? 'のりば'+pc : 'のりば'; }
-
+// ================== 画面 ==================
 function render(){
   document.getElementById('destShow').style.display = dest?'block':'none';
   document.getElementById('destPick').style.display = dest?'none':'block';
-  if(dest) document.getElementById('destName').textContent='🏁 '+dest;
+  if(dest) document.getElementById('destName').textContent='🏁 '+sn(dest);
   document.getElementById('hereShow').style.display = here?'block':'none';
   document.getElementById('herePick').style.display = here?'none':'block';
-  if(here) document.getElementById('hereName').textContent='📍 '+here;
+  if(here) document.getElementById('hereName').textContent='📍 '+sn(here);
   document.getElementById('destSug').innerHTML=''; document.getElementById('hereSug').innerHTML='';
   const R=document.getElementById('result');
   R.innerHTML='';
   if(!dest||!here) return;
-  if(dest===here){ R.innerHTML='<div class="card">目的地といまの場所が同じです 😊</div>'; return; }
+  if(dest===here){ R.innerHTML='<div class="card">'+t('same')+'</div>'; return; }
 
   const now=new Date();
   const nowMin=now.getHours()*60+now.getMinutes()+walkMin;
   const act=activeServices(now);
   const poles=nameToPoles[here];
 
-  // 各のりばを判定
   const verdicts=poles.map(pi=>({pi, ...judge(pi,dest,act,nowMin)}));
   const goodPoles=verdicts.filter(v=>v.ok.length>0);
-  // 各のりばの「いちばん早く目的地に着く便」を求め、到着が早い順（同着なら発車が早い順）に並べる
   goodPoles.forEach(v=>{
     let bt=null;
     v.ok.forEach(b=>{ if(!bt || b.arr<bt.arr || (b.arr===bt.arr && b.t<bt.t)) bt=b; });
@@ -260,8 +466,7 @@ function render(){
   let mapSpec=null;
 
   if(goodPoles.length===0){
-    html+='<div class="card"><div class="warn">😢 この時間、「'+esc(here)+'」から「'+esc(dest)+'」へ直接行くバスはありません。</div>';
-    // 歩いて行ける近くのバス停をさがす（半径800m）
+    html+='<div class="card"><div class="warn">'+t('nodirect', esc(sn(here)), esc(sn(dest)))+'</div>';
     let ref;
     if(myPos){ ref=[myPos.lat,myPos.lon]; }
     else { ref=[poles.reduce((a,i)=>a+GD.stops[i][1],0)/poles.length, poles.reduce((a,i)=>a+GD.stops[i][2],0)/poles.length]; }
@@ -270,112 +475,110 @@ function render(){
       if(s[0]===here) return;
       const dd=dist(ref[0],ref[1],s[1],s[2]);
       if(dd>800) return;
-      const w=Math.ceil(dd/67); // 徒歩4km/h
+      const w=Math.ceil(dd/67);
       const v=judge(i,dest,act,nowMin+w);
       if(v.ok.length) cands.push({pi:i, dd:Math.round(dd), w, dep:v.ok[0].t});
     });
     if(cands.length){
-      // 同じバス停名は最寄りのりばだけ残す
       cands.sort((a,b)=>a.dd-b.dd);
       const seen=new Set(), top=[];
       cands.forEach(c=>{ const n=GD.stops[c.pi][0]; if(!seen.has(n)){seen.add(n); top.push(c);} });
-      html+='<div class="label" style="margin-top:12px">🚶 でも、歩いて行ける近くのバス停から乗れます！</div><div class="suggest">';
+      html+='<div class="label" style="margin-top:12px">'+t('walkable')+'</div><div class="suggest">';
       top.slice(0,3).forEach(c=>{
         const s=GD.stops[c.pi];
         const dir=bearing(ref[0],ref[1],s[1],s[2]);
         html+='<button onclick="goNearby('+c.pi+','+c.w+')">'+
-          '<b>'+esc(s[0])+' '+poleLabel(c.pi)+'</b><span class="small" id="lm'+c.pi+'"></span><br>'+
-          '<span class="small">'+dir+'へ約'+c.dd+'m（徒歩'+c.w+'分）・'+fmt(c.dep)+'発に間に合います</span></button>';
+          '<b>'+esc(sn(s[0]))+' '+poleLabel(c.pi)+'</b><span class="small" id="lm'+c.pi+'"></span><br>'+
+          '<span class="small">'+t('towalk', dir, c.dd, c.w, fmt(c.dep))+'</span></button>';
       });
-      html+='</div><div class="small" style="margin-top:6px">押すと、そのバス停からの案内に切りかわります。</div>';
+      html+='</div><div class="small" style="margin-top:6px">'+t('tapswitch')+'</div>';
       html+='<div id="lmap" style="height:280px; border-radius:10px; margin-top:10px"></div>';
       mapSpec={markers:top.slice(0,3).map(c=>{
         const s=GD.stops[c.pi];
         return {pi:c.pi, lat:s[1],lon:s[2],label:s[3]||'?',color:'#0d7a4f',
-                popup:esc(s[0])+' '+poleLabel(c.pi)+'<br>徒歩約'+c.w+'分<br><a target="_blank" href="https://www.google.com/maps/dir/?api=1&destination='+s[1]+','+s[2]+'&travelmode=walking">Googleマップで道順</a>'};
+                popup:esc(sn(s[0]))+' '+poleLabel(c.pi)+'<br>'+t('pwalk',c.w)+'<br><a target="_blank" href="https://www.google.com/maps/dir/?api=1&destination='+s[1]+','+s[2]+'&travelmode=walking">'+t('pgmap')+'</a>'};
       }), user:[ref[0],ref[1]]};
     } else {
-      html+='<div class="small" style="margin-top:8px">歩ける範囲（800m）にも直行できるバス停が見つかりませんでした。</div>';
+      html+='<div class="small" style="margin-top:8px">'+t('nowalk')+'</div>';
     }
-    // 乗りかえが必要なケースは専門家（Googleマップ）にバトンタッチ
     const ds=GD.stops[nameToPoles[dest][0]];
     const gm='https://www.google.com/maps/dir/?api=1&origin='+ref[0]+','+ref[1]+'&destination='+ds[1]+','+ds[2]+'&travelmode=transit';
-    html+='<a class="btn btn-blue" style="display:block; text-decoration:none; text-align:center; margin-top:14px" target="_blank" href="'+gm+'">🚌 乗りかえで行く（Googleマップを開く）</a>';
-    html+='<div class="small" style="text-align:center; margin-top:4px">ここから「'+esc(dest)+'」までの乗換案内をGoogleマップで表示します</div>';
+    html+='<a class="btn btn-blue" style="display:block; text-decoration:none; text-align:center; margin-top:14px" target="_blank" href="'+gm+'">'+t('transfer')+'</a>';
+    html+='<div class="small" style="text-align:center; margin-top:4px">'+t('transfernote', esc(sn(dest)))+'</div>';
     html+='</div>';
     R.innerHTML=html; drawMap(mapSpec);
     if(mapSpec) annotate(mapSpec.markers.map(mk=>mk.pi));
     return;
   }
   if(walkMin>0){
-    html+='<div class="card"><div class="small">🚶 「'+esc(here)+'」まで歩く時間（約'+walkMin+'分）を見込んで、間に合う便だけ表示しています。</div></div>';
+    html+='<div class="card"><div class="small">'+t('walknote', esc(sn(here)), walkMin)+'</div></div>';
   }
 
-  // のりば誘導
   if(poles.length>1){
-    html+='<div class="card"><div class="label">🚏 待つ場所に注意！「'+esc(here)+'」にはのりばが'+poles.length+'か所あります</div>';
+    html+='<div class="card"><div class="label">'+t('polecare', esc(sn(here)), poles.length)+'</div>';
     let wrongPole = nearestPole!==null && !goodPoles.some(v=>v.pi===nearestPole) && poles.includes(nearestPole);
     goodPoles.forEach((v,vi)=>{
       const s=GD.stops[v.pi];
       html+='<div style="margin:10px 0; padding-bottom:8px; border-bottom:1px dashed #ddd">';
-      html+='<span class="pill ok">◎ '+poleLabel(v.pi)+'</span>';
-      if(vi===0 && goodPoles.length>1) html+=' <span class="pill" style="background:#fff3cd; color:#8a6100">★いちばん早く着く</span>';
+      html+='<span class="pill ok">◎ '+poleLabel(v.pi)+'</span>'+esc(t('waithere'));
+      if(vi===0 && goodPoles.length>1) html+=' <span class="pill" style="background:#fff3cd; color:#8a6100">'+t('fastest')+'</span>';
       html+='<span class="small" id="lm'+v.pi+'"></span>';
-      html+='<div style="font-size:17px; margin-top:2px">'+fmt(v.best.t)+'発 →「'+esc(dest)+'」'+fmt(v.best.arr)+'着 <span class="small">['+esc(v.best.r)+'] '+esc(v.best.h)+'</span></div>';
+      html+='<div style="font-size:17px; margin-top:2px">'+fmt(v.best.t)+' →「'+esc(sn(dest))+'」'+fmt(v.best.arr)+' <span class="small">['+esc(v.best.r)+'] '+esc(v.best.h)+'</span></div>';
       if(myPos){
         const dd=Math.round(dist(myPos.lat,myPos.lon,s[1],s[2]));
-        if(dd>30) html+='<div class="move">→ ここから'+bearing(myPos.lat,myPos.lon,s[1],s[2])+'へ 約'+dd+'m</div>';
-        else html+='<div class="move">→ 今いる場所でOKです！</div>';
+        if(dd>30) html+='<div class="move">'+t('gohere', bearing(myPos.lat,myPos.lon,s[1],s[2]), dd)+'</div>';
+        else html+='<div class="move">'+t('okhere')+'</div>';
       }
-      html+=' <a class="link small" target="_blank" href="https://www.google.com/maps/dir/?api=1&destination='+s[1]+','+s[2]+'&travelmode=walking">Googleマップで道順を見る</a>';
+      html+=' <a class="link small" target="_blank" href="https://www.google.com/maps/dir/?api=1&destination='+s[1]+','+s[2]+'&travelmode=walking">'+t('gmapwalk')+'</a>';
       html+='</div>';
     });
     if(wrongPole){
-      html='<div class="card"><div class="warn">⚠️ いまいる'+poleLabel(nearestPole)+'には「'+esc(dest)+'」へ行くバスは来ません！</div></div>'+html;
+      html='<div class="card"><div class="warn">'+t('wrongpole', poleLabel(nearestPole), esc(sn(dest)))+'</div></div>'+html;
     }
     verdicts.filter(v=>v.ok.length===0).forEach(v=>{
-      html+='<div style="margin:6px 0"><span class="pill ng">✕ '+poleLabel(v.pi)+'</span> <span class="small">には来ません</span><span class="small" id="lm'+v.pi+'"></span></div>';
+      html+='<div style="margin:6px 0"><span class="pill ng">✕ '+poleLabel(v.pi)+'</span> <span class="small">'+esc(t('notcome'))+'</span><span class="small" id="lm'+v.pi+'"></span></div>';
     });
     html+='<div id="lmap" style="height:280px; border-radius:10px; margin-top:10px"></div>';
     mapSpec={markers:poles.map(pi=>{
       const s=GD.stops[pi], ok=goodPoles.some(v=>v.pi===pi);
       return {pi:pi, lat:s[1],lon:s[2],label:s[3]||'?',color:ok?'#0d7a4f':'#c0392b',
-              popup:esc(s[0])+' '+poleLabel(pi)+(ok?'<br><b style="color:#0d7a4f">◎ ここで待つ</b>':'<br><b style="color:#c0392b">✕ 来ません</b>')};
+              popup:esc(sn(s[0]))+' '+poleLabel(pi)+(ok?'<br><b style="color:#0d7a4f">'+t('pwait')+'</b>':'<br><b style="color:#c0392b">'+t('pnot')+'</b>')};
     }), user: myPos?[myPos.lat,myPos.lon]:null};
     html+='</div>';
   }
 
-  // 乗るべきバス＝いちばん早く目的地に着く便（出発が早い順ではない！循環バス対策）
   const v0 = goodPoles[0];
   const next = v0.best;
   const hs=parseHS(next.h);
   const wait=next.t-nowMin;
   html+='<div class="card">';
-  html+='<div class="label">この「顔」のバスに乗ってください（'+poleLabel(v0.pi)+'）</div>';
+  html+='<div class="label">'+t('face', poleLabel(v0.pi))+'</div>';
   html+='<div class="led"><div class="row"><span class="num">'+esc(next.r)+'</span><span class="dest">'+esc(hs.d)+'</span></div>';
   if(hs.v) html+='<div class="via">'+esc(hs.v)+'</div>';
   html+='</div>';
-  html+='<div style="text-align:center; margin-top:8px">'+fmt(next.t)+'発（あと約'+wait+'分）／「'+esc(dest)+'」には '+fmt(next.arr)+' ごろ着</div>';
+  const rj=romajiHS(hs);
+  if(rj) html+='<div class="romaji">→ '+esc(rj)+'</div>';
+  html+='<div style="text-align:center; margin-top:8px">'+t('deparr', fmt(next.t), wait, esc(sn(dest)), fmt(next.arr))+'</div>';
   const su=GD.stops[v0.pi][4];
   if(su){
-    html+='<div class="small" style="text-align:center; margin-top:6px"><a class="link" target="_blank" href="https://map.kotsu.city.nagoya.jp/map/QR.jsp?from='+encodeURIComponent(su)+'">いまバスがどのへんに来ているか見る（市バス公式）</a><br>開いたら <b>「'+esc(next.r)+'」の「'+esc(hs.d)+'」行き</b> の行だけ見ればOKです</div>';
+    html+='<div class="small" style="text-align:center; margin-top:6px"><a class="link" target="_blank" href="https://map.kotsu.city.nagoya.jp/map/QR.jsp?from='+encodeURIComponent(su)+'">'+t('where')+'</a><br>'+t('wherenote', esc(next.r), esc(hs.d))+'</div>';
   }
 
-  html+='<div class="ok-title">◎ 乗ってOK（このあとの便）</div><div class="buslist ok">';
+  html+='<div class="ok-title">'+t('oklist')+'</div><div class="buslist ok">';
   v0.ok.slice(0,5).forEach(b=>{ const p=parseHS(b.h);
     const slower = v0.ok.some(y=>y.t>b.t && y.arr<b.arr);
     html+='<div><span class="t">'+fmt(b.t)+'</span><span class="rt">'+esc(b.r)+'</span>'+esc(p.d)+(p.v?' <span class="small">'+esc(p.v)+'</span>':'')
-      +' <span class="small">→ '+fmt(b.arr)+'着</span>'
-      +(slower?' <span class="pill ng" style="font-size:12px; padding:0 8px">⏳遠回り</span>':'')+'</div>'; });
+      +' <span class="small">'+t('arr', fmt(b.arr))+'</span>'
+      +(slower?' <span class="pill ng" style="font-size:12px; padding:0 8px">'+t('slow')+'</span>':'')+'</div>'; });
   html+='</div>';
 
   if(v0.ng.length){
-    html+='<div class="ng-title">✕ 同じのりばに来ても乗らないで</div><div class="buslist ng">';
+    html+='<div class="ng-title">'+t('nglist')+'</div><div class="buslist ng">';
     v0.ng.slice(0,6).forEach(b=>{ const p=parseHS(b.h);
       html+='<div><span class="rt">'+esc(b.r)+'</span>'+esc(p.d)+(p.v?' <span class="small">'+esc(p.v)+'</span>':'')+'</div>'; });
     html+='</div>';
   } else {
-    html+='<div style="background:var(--green-bg); border-radius:10px; padding:10px 12px; margin-top:12px; font-size:17px">✓ '+poleLabel(v0.pi)+'に来るバスは<b>全部「'+esc(dest)+'」に行きます</b>。安心して乗ってください。</div>';
+    html+='<div style="background:var(--green-bg); border-radius:10px; padding:10px 12px; margin-top:12px; font-size:17px">'+t('allok', poleLabel(v0.pi), esc(sn(dest)))+'</div>';
   }
   html+='</div>';
   R.innerHTML=html;
@@ -383,19 +586,17 @@ function render(){
   if(poles.length>1) annotate(poles);
 }
 
+// ================== 地図 ==================
 let lmapObj=null, lmapMarkers={};
 function drawMap(spec){
   const el=document.getElementById('lmap');
   if(!el || !spec) return;
-  if(!window.L){ el.innerHTML='<div class="small" style="padding:20px">地図の読み込みにはインターネット接続が必要です</div>'; return; }
+  if(!window.L){ el.innerHTML='<div class="small" style="padding:20px">'+t('needsnet')+'</div>'; return; }
   if(lmapObj){ lmapObj.remove(); lmapObj=null; }
-  // 1本指スクロールで地図が動かないように（プラグイン未読込なら普通の地図として動く）
   const m=L.map(el,{
     gestureHandling:true,
     gestureHandlingOptions:{duration:1500, text:{
-      touch:'地図を動かすには指2本でさわってください',
-      scroll:'地図を拡大するには Ctrl キーを押しながらスクロール',
-      scrollMac:'地図を拡大するには ⌘ キーを押しながらスクロール'
+      touch:t('gtouch'), scroll:t('gscroll'), scrollMac:t('gscrollmac')
     }}
   });
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -411,20 +612,20 @@ function drawMap(spec){
   });
   if(spec.user){
     pts.push(spec.user);
-    L.marker(spec.user,{icon:L.divIcon({className:'',iconSize:[70,42],iconAnchor:[35,14],
-      html:'<div style="text-align:center"><div style="background:#1a6fd4;border-radius:50%;width:16px;height:16px;margin:0 auto;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.5)"></div><div style="color:#1a6fd4;font-weight:bold;font-size:12px;text-shadow:0 0 3px #fff,0 0 3px #fff">いまここ</div></div>'
+    L.marker(spec.user,{icon:L.divIcon({className:'',iconSize:[90,42],iconAnchor:[45,14],
+      html:'<div style="text-align:center"><div style="background:#1a6fd4;border-radius:50%;width:16px;height:16px;margin:0 auto;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.5)"></div><div style="color:#1a6fd4;font-weight:bold;font-size:12px;text-shadow:0 0 3px #fff,0 0 3px #fff">'+t('mehere')+'</div></div>'
     })}).addTo(m);
   }
   m.fitBounds(pts,{padding:[40,40],maxZoom:17});
   lmapObj=m;
 }
 
-// のりばの目印（近くのお店）を OpenStreetMap (Overpass API) から取得
+// ================== 目印（OpenStreetMap Overpass API） ==================
 const lmCache=JSON.parse(localStorage.getItem('lmCache3')||'{}');
 const OVERPASS=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter'];
 async function annotate(poleIdxs){
   const need=poleIdxs.filter(i=>!(String(i) in lmCache));
-  need.forEach(i=>{const el=document.getElementById('lm'+i); if(el) el.textContent='　目印をさがしています…';});
+  need.forEach(i=>{const el=document.getElementById('lm'+i); if(el) el.textContent='　'+t('lmsearch');});
   if(need.length){
     let q='[out:json][timeout:10];(';
     need.forEach(i=>{const s=GD.stops[i];
@@ -456,23 +657,25 @@ async function annotate(poleIdxs){
         const dd=dist(s[1],s[2],la,lo);
         if(dd<bd&&dd<=80){bd=dd;best=e;}
       });
-      lmCache[String(i)]=best?{n:best.tags.name,d:Math.round(bd)}:null;
+      lmCache[String(i)]=best?{n:best.tags.name,ne:best.tags['name:en']||'',d:Math.round(bd)}:null;
     });
     localStorage.setItem('lmCache3',JSON.stringify(lmCache));
   }
   poleIdxs.forEach(i=>{
     const lm=lmCache[String(i)];
     const el=document.getElementById('lm'+i);
-    if(!lm){ if(el&&el.textContent.indexOf('さがして')>=0) el.textContent=''; return; }
-    const txt=lm.d<=50?'「'+lm.n+'」の前あたり':'「'+lm.n+'」の近く';
-    if(el) el.textContent='　目印：'+txt;
+    if(!lm){ if(el&&el.textContent.indexOf(t('lmsearch'))>=0) el.textContent=''; return; }
+    let nm=lm.n;
+    if(lang!=='ja' && lm.ne) nm=lm.n+' ('+lm.ne+')';
+    const txt=t(lm.d<=50?'lmnear':'lmnear2', nm);
+    if(el) el.textContent='　'+txt;
     const mk=lmapMarkers[i];
-    if(mk&&mk.getPopup()) mk.setPopupContent(mk.getPopup().getContent()+'<br>目印：'+esc(txt));
+    if(mk&&mk.getPopup()) mk.setPopupContent(mk.getPopup().getContent()+'<br>'+esc(txt));
   });
 }
 
+applyStatic();
 render();
 </script>
-<!-- prototype v0.3: OSM map + landmarks -->
 </body>
 </html>
