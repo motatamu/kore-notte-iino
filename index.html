@@ -16,26 +16,24 @@
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   body{margin:0; background:var(--bg); color:var(--ink);
-       font-family:"Hiragino Sans","Yu Gothic UI","Meiryo",sans-serif; font-size:18px; line-height:1.6;}
+       font-family:"Hiragino Sans","Yu Gothic UI","Meiryo",sans-serif; font-size:20px; line-height:1.6;}
   .wrap{max-width:520px; margin:0 auto; padding:16px 14px 60px;}
   h1{font-size:22px; margin:8px 0 2px; text-align:center;}
   .sub{text-align:center; color:var(--muted); font-size:13px; margin:0 0 10px;}
   #langbar{text-align:center; margin-bottom:14px;}
-  #langbar button{font-size:13px; padding:4px 10px; margin:2px; border:1px solid #ccc;
-       border-radius:16px; background:#fff; cursor:pointer;}
-  #langbar button.on{background:var(--blue); color:#fff; border-color:var(--blue); font-weight:700;}
+  #langbar select{font-size:16px; padding:6px 10px; border:1px solid #ccc; border-radius:10px; background:#fff;}
   .card{background:var(--card); border-radius:16px; padding:16px; margin-bottom:14px;
         box-shadow:0 1px 3px rgba(0,0,0,.08);}
-  .label{font-size:15px; color:var(--muted); margin-bottom:6px;}
-  .bigval{font-size:24px; font-weight:700;}
-  input[type=text]{width:100%; font-size:20px; padding:12px; border:2px solid #ccc; border-radius:10px;}
+  .label{font-size:16px; color:var(--muted); margin-bottom:6px;}
+  .bigval{font-size:28px; font-weight:700;}
+  input[type=text]{width:100%; font-size:22px; padding:12px; border:2px solid #ccc; border-radius:10px;}
   input[type=text]:focus{border-color:var(--blue); outline:none;}
-  .btn{display:block; width:100%; font-size:20px; font-weight:700; padding:14px;
+  .btn{display:block; width:100%; font-size:22px; font-weight:700; padding:14px;
        border:none; border-radius:12px; cursor:pointer; margin-top:10px;}
   .btn-blue{background:var(--blue); color:#fff;}
   .btn-gray{background:#e5e3dc; color:var(--ink); font-weight:500; font-size:16px; padding:10px;}
   .suggest{margin-top:6px;}
-  .suggest button{display:block; width:100%; text-align:left; font-size:19px; padding:12px;
+  .suggest button{display:block; width:100%; text-align:left; font-size:21px; padding:12px;
        background:#fff; border:1px solid #ddd; border-radius:10px; margin-top:6px; cursor:pointer;}
   .suggest button:active{background:#eef4fd;}
   .led{background:#141414; border:4px solid #3a3a3a; border-radius:12px; padding:14px 10px; text-align:center;}
@@ -46,7 +44,7 @@
   .romaji{text-align:center; font-size:15px; color:var(--muted); margin-top:6px;}
   .ok-title{color:var(--green); font-weight:700; font-size:18px; margin:14px 0 6px;}
   .ng-title{color:var(--red); font-weight:700; font-size:18px; margin:14px 0 6px;}
-  .buslist{border-radius:10px; padding:8px 12px; font-size:18px;}
+  .buslist{border-radius:10px; padding:8px 12px; font-size:20px;}
   .buslist.ok{background:var(--green-bg);} .buslist.ng{background:var(--red-bg);}
   .buslist div{padding:6px 0; border-bottom:1px dashed rgba(0,0,0,.12);}
   .buslist div:last-child{border-bottom:none;}
@@ -57,7 +55,7 @@
   .move{font-size:26px; color:var(--blue);}
   .pill{display:inline-block; border-radius:20px; padding:2px 12px; font-size:15px; font-weight:700;}
   .pill.ok{background:var(--green-bg); color:var(--green);} .pill.ng{background:var(--red-bg); color:var(--red);}
-  .small{font-size:13px; color:var(--muted);}
+  .small{font-size:14px; color:var(--muted);}
   .step{display:flex; align-items:center; gap:8px; margin-bottom:6px;}
   .stepnum{background:var(--blue); color:#fff; border-radius:50%; width:28px; height:28px;
       display:flex; align-items:center; justify-content:center; font-weight:700; flex-shrink:0;}
@@ -102,7 +100,7 @@
 
   <footer class="small">
     出典：名古屋市交通局「市バスGTFS-JPデータ」(CC BY 4.0) 2026年3月28日改正<br>
-    <span id="footNote">時刻表ベースの案内です。遅延には対応していません（プロトタイプ v0.8）。</span>
+    <span id="footNote">時刻表ベースの案内です。遅延には対応していません（プロトタイプ v0.9）。</span>
   </footer>
 </div>
 
@@ -130,7 +128,8 @@ face:'この「顔」のバスに乗ってください（{0}）',deparr:'{0}発�
 where:'いまバスがどのへんに来ているか見る（市バス公式）',wherenote:'開いたら「{0}」の「{1}」行きの行だけ見ればOKです',
 oklist:'◎ 乗ってOK（このあとの便）',arr:'→ {0}着',slow:'⏳遠回り',nglist:'✕ 同じのりばに来ても乗らないで',
 allok:'✓ {0}に来るバスは全部「{1}」に行きます。安心して乗ってください。',
-foot:'時刻表ベースの案内です。遅延には対応していません（プロトタイプ v0.8）。',needsnet:'地図の読み込みにはインターネット接続が必要です',
+lastbus:'⚠️ これが今日の最終バスです！逃すと明日までありません',fewleft:'きょうはこのあと、あと{0}本だけです',
+foot:'時刻表ベースの案内です。遅延には対応していません（プロトタイプ v0.9）。',needsnet:'地図の読み込みにはインターネット接続が必要です',
 dirs:['北','北東','東','南東','南','南西','西','北西'],via:'{0}',
 pwait:'◎ ここで待つ',pnot:'✕ 来ません',pwalk:'徒歩約{0}分',pgmap:'Googleマップで道順',mehere:'いまここ',
 gtouch:'地図を動かすには指2本でさわってください',gscroll:'地図を拡大するには Ctrl キーを押しながらスクロール',gscrollmac:'地図を拡大するには ⌘ キーを押しながらスクロール'},
@@ -151,7 +150,8 @@ face:'Board the bus with this "face" ({0})',deparr:'Departs {0} (in about {1} mi
 where:'See where the bus is now (official site)',wherenote:'On that page, just look for the "{0}" bus bound for "{1}"',
 oklist:'◎ OK to board (upcoming buses)',arr:'→ arr. {0}',slow:'⏳detour',nglist:'✕ Do NOT board these (they also stop here)',
 allok:'✓ Every bus at {0} goes to "{1}". Board with confidence!',
-foot:'Timetable-based guidance. Delays are not reflected (prototype v0.8).',needsnet:'Internet connection is needed to load the map',
+lastbus:'⚠️ This is the LAST bus today! If you miss it, there is no bus until tomorrow.',fewleft:'Only {0} more bus(es) today after this one.',
+foot:'Timetable-based guidance. Delays are not reflected (prototype v0.9).',needsnet:'Internet connection is needed to load the map',
 dirs:['north','northeast','east','southeast','south','southwest','west','northwest'],via:'via {0}',
 pwait:'◎ Wait here',pnot:'✕ Not your bus stop',pwalk:'about {0} min walk',pgmap:'Directions (Google Maps)',mehere:'You are here',
 gtouch:'Use two fingers to move the map',gscroll:'Use Ctrl + scroll to zoom the map',gscrollmac:'Use ⌘ + scroll to zoom the map'},
@@ -172,7 +172,8 @@ face:'请乘坐显示这个“面孔”的巴士（{0}）',deparr:'{0}发车（�
 where:'查看巴士当前位置（官方网站）',wherenote:'打开后只需查看「{0}」开往「{1}」的那一行',
 oklist:'◎ 可以乘坐（之后的班次）',arr:'→ {0}到达',slow:'⏳绕远',nglist:'✕ 请勿乘坐这些车（也停靠此站）',
 allok:'✓ {0}的所有巴士都开往「{1}」，请放心乘坐。',
-foot:'基于时刻表，不反映延误（测试版 v0.8）。',needsnet:'加载地图需要网络连接',
+lastbus:'⚠️ 这是今天的末班车！错过就要等到明天了。',fewleft:'今天之后只剩{0}班了。',
+foot:'基于时刻表，不反映延误（测试版 v0.9）。',needsnet:'加载地图需要网络连接',
 dirs:['北','东北','东','东南','南','西南','西','西北'],via:'经由{0}',
 pwait:'◎ 在此候车',pnot:'✕ 不去目的地',pwalk:'步行约{0}分钟',pgmap:'路线（谷歌地图）',mehere:'当前位置',
 gtouch:'请用两根手指移动地图',gscroll:'按住 Ctrl 并滚动以缩放地图',gscrollmac:'按住 ⌘ 并滚动以缩放地图'},
@@ -193,7 +194,8 @@ face:'이 "얼굴"의 버스를 타세요 ({0})',deparr:'{0} 출발 (약 {1}분 
 where:'버스가 지금 어디쯤인지 보기 (공식)',wherenote:'열리면 「{0}」의 「{1}」행 줄만 보면 됩니다',
 oklist:'◎ 타도 되는 버스 (이후 편)',arr:'→ {0} 도착',slow:'⏳우회',nglist:'✕ 타면 안 되는 버스 (같은 승차장에 옵니다)',
 allok:'✓ {0}에 오는 버스는 모두 「{1}」에 갑니다. 안심하고 타세요.',
-foot:'시간표 기준 안내이며 지연은 반영되지 않습니다 (프로토타입 v0.8).',needsnet:'지도를 불러오려면 인터넷 연결이 필요합니다',
+lastbus:'⚠️ 오늘의 막차입니다! 놓치면 내일까지 버스가 없습니다.',fewleft:'오늘 남은 버스는 이후 {0}대뿐입니다.',
+foot:'시간표 기준 안내이며 지연은 반영되지 않습니다 (프로토타입 v0.9).',needsnet:'지도를 불러오려면 인터넷 연결이 필요합니다',
 dirs:['북','북동','동','남동','남','남서','서','북서'],via:'{0} 경유',
 pwait:'◎ 여기서 대기',pnot:'✕ 목적지행 아님',pwalk:'도보 약 {0}분',pgmap:'경로 (구글 지도)',mehere:'현재 위치',
 gtouch:'지도를 움직이려면 두 손가락을 사용하세요',gscroll:'Ctrl + 스크롤로 지도 확대/축소',gscrollmac:'⌘ + 스크롤로 지도 확대/축소'},
@@ -214,7 +216,8 @@ face:'Hãy lên xe buýt có "khuôn mặt" này ({0})',deparr:'Khởi hành {0}
 where:'Xem xe buýt đang ở đâu (trang chính thức)',wherenote:'Mở trang, chỉ cần xem dòng xe "{0}" đi "{1}"',
 oklist:'◎ Có thể lên (các chuyến sắp tới)',arr:'→ đến {0}',slow:'⏳đường vòng',nglist:'✕ ĐỪNG lên các xe này (cũng dừng ở đây)',
 allok:'✓ Mọi xe đến {0} đều đi "{1}". Cứ yên tâm lên xe!',
-foot:'Theo lịch trình, chưa phản ánh chậm trễ (bản thử v0.8).',needsnet:'Cần kết nối Internet để tải bản đồ',
+lastbus:'⚠️ Đây là chuyến xe CUỐI CÙNG hôm nay! Lỡ chuyến này thì phải đợi đến mai.',fewleft:'Hôm nay chỉ còn {0} chuyến nữa sau chuyến này.',
+foot:'Theo lịch trình, chưa phản ánh chậm trễ (bản thử v0.9).',needsnet:'Cần kết nối Internet để tải bản đồ',
 dirs:['bắc','đông bắc','đông','đông nam','nam','tây nam','tây','tây bắc'],via:'qua {0}',
 pwait:'◎ Chờ ở đây',pnot:'✕ Không đi điểm đến',pwalk:'đi bộ khoảng {0} phút',pgmap:'Chỉ đường (Google Maps)',mehere:'Bạn đang ở đây',
 gtouch:'Dùng hai ngón tay để di chuyển bản đồ',gscroll:'Giữ Ctrl và cuộn để thu phóng',gscrollmac:'Giữ ⌘ và cuộn để thu phóng'},
@@ -235,7 +238,8 @@ face:'Naiklah bus dengan "wajah" ini ({0})',deparr:'Berangkat {0} (sekitar {1} m
 where:'Lihat posisi bus sekarang (situs resmi)',wherenote:'Di halaman itu, cukup lihat baris bus "{0}" jurusan "{1}"',
 oklist:'◎ Boleh naik (bus berikutnya)',arr:'→ tiba {0}',slow:'⏳memutar',nglist:'✕ JANGAN naik bus ini (berhenti di sini juga)',
 allok:'✓ Semua bus di {0} menuju "{1}". Naik saja dengan tenang!',
-foot:'Berdasarkan jadwal; keterlambatan tidak tercermin (prototipe v0.8).',needsnet:'Perlu koneksi internet untuk memuat peta',
+lastbus:'⚠️ Ini bus TERAKHIR hari ini! Kalau terlewat, tidak ada bus sampai besok.',fewleft:'Setelah ini tinggal {0} bus lagi hari ini.',
+foot:'Berdasarkan jadwal; keterlambatan tidak tercermin (prototipe v0.9).',needsnet:'Perlu koneksi internet untuk memuat peta',
 dirs:['utara','timur laut','timur','tenggara','selatan','barat daya','barat','barat laut'],via:'lewat {0}',
 pwait:'◎ Tunggu di sini',pnot:'✕ Tidak ke tujuan',pwalk:'jalan sekitar {0} menit',pgmap:'Rute (Google Maps)',mehere:'Anda di sini',
 gtouch:'Gunakan dua jari untuk menggeser peta',gscroll:'Ctrl + gulir untuk zoom',gscrollmac:'⌘ + gulir untuk zoom'},
@@ -256,7 +260,8 @@ face:'Sumakay sa bus na may ganitong "mukha" ({0})',deparr:'Aalis {0} (mga {1} m
 where:'Tingnan kung nasaan na ang bus (opisyal)',wherenote:'Sa page na iyon, tingnan lang ang linyang "{0}" papuntang "{1}"',
 oklist:'◎ Puwedeng sakyan (mga susunod na biyahe)',arr:'→ dating {0}',slow:'⏳paikot',nglist:'✕ HUWAG sakyan ang mga ito (humihinto rin dito)',
 allok:'✓ Lahat ng bus sa {0} ay papuntang "{1}". Sakay lang nang panatag!',
-foot:'Batay sa timetable; hindi kasama ang delay (prototype v0.8).',needsnet:'Kailangan ng internet para sa mapa',
+lastbus:'⚠️ Ito na ang HULING bus ngayon! Kapag naiwan ka, wala nang bus hanggang bukas.',fewleft:'{0} biyahe na lang ngayon pagkatapos nito.',
+foot:'Batay sa timetable; hindi kasama ang delay (prototype v0.9).',needsnet:'Kailangan ng internet para sa mapa',
 dirs:['hilaga','hilagang-silangan','silangan','timog-silangan','timog','timog-kanluran','kanluran','hilagang-kanluran'],via:'daan sa {0}',
 pwait:'◎ Maghintay dito',pnot:'✕ Hindi papunta sa destinasyon',pwalk:'mga {0} min lakad',pgmap:'Direksyon (Google Maps)',mehere:'Nandito ka',
 gtouch:'Gumamit ng dalawang daliri para igalaw ang mapa',gscroll:'Ctrl + scroll para mag-zoom',gscrollmac:'⌘ + scroll para mag-zoom'}
@@ -292,13 +297,18 @@ function applyStatic(){
   document.querySelectorAll('.chg').forEach(b=>{ b.textContent=t('change'); });
   const bar=document.getElementById('langbar');
   bar.innerHTML='';
+  const gl=document.createElement('span');
+  gl.textContent='🌐 ';
+  bar.appendChild(gl);
+  const sel=document.createElement('select');
   LANGS.forEach(([code,label])=>{
-    const b=document.createElement('button');
-    b.textContent=label;
-    if(code===lang) b.className='on';
-    b.onclick=()=>setLang(code);
-    bar.appendChild(b);
+    const o=document.createElement('option');
+    o.value=code; o.textContent=label;
+    if(code===lang) o.selected=true;
+    sel.appendChild(o);
   });
+  sel.onchange=()=>setLang(sel.value);
+  bar.appendChild(sel);
 }
 
 // ================== データ索引 ==================
@@ -559,6 +569,11 @@ function render(){
   const rj=romajiHS(hs);
   if(rj) html+='<div class="romaji">→ '+esc(rj)+'</div>';
   html+='<div style="text-align:center; margin-top:8px">'+t('deparr', fmt(next.t), wait, esc(sn(dest)), fmt(next.arr))+'</div>';
+  if(v0.ok.length===1){
+    html+='<div class="warn" style="margin-top:10px">'+t('lastbus')+'</div>';
+  } else if(v0.ok.length<=3){
+    html+='<div style="text-align:center; margin-top:6px; color:#8a6100; font-weight:700">'+t('fewleft', v0.ok.length-1)+'</div>';
+  }
   const su=GD.stops[v0.pi][4];
   if(su){
     html+='<div class="small" style="text-align:center; margin-top:6px"><a class="link" target="_blank" href="https://map.kotsu.city.nagoya.jp/map/QR.jsp?from='+encodeURIComponent(su)+'">'+t('where')+'</a><br>'+t('wherenote', esc(next.r), esc(hs.d))+'</div>';
