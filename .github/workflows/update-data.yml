@@ -1,0 +1,51 @@
+# ダイヤ自動更新ワークフロー
+# リポジトリの .github/workflows/update-data.yml に置く
+#
+# 毎週月曜の朝6時（日本時間）に名古屋市オープンデータカタログを確認し、
+# 新しいダイヤ（GTFS-JP）が出ていれば data.js を自動で作り直してコミットする。
+# コミットされると GitHub Pages が自動で再デプロイされる。
+# 失敗したときは GitHub からメールで通知が届く（data.js は書き換えない＝安全側）。
+
+name: dia-auto-update
+
+on:
+  schedule:
+    - cron: '0 21 * * 0'   # 毎週 日曜21:00 UTC ＝ 月曜6:00 JST
+  workflow_dispatch: {}     # 手動実行ボタン（Actionsタブから試せる）
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 新ダイヤを確認して必要なら変換
+        id: run
+        run: |
+          set -e
+          result=$(python3 tools/auto_update.py)
+          echo "result=$result" >> "$GITHUB_OUTPUT"
+          echo "結果: $result"
+
+      - name: 変更があればコミット（＝公開）
+        run: |
+          git config user.name "dia-auto-update"
+          git config user.email "actions@users.noreply.github.com"
+          git add data.js tools/data-version.txt
+          if ! git diff --cached --quiet; then
+            git commit -m "ダイヤ自動更新: $(sed -n 2p tools/data-version.txt)"
+            git push
+            echo "新しいダイヤを反映しました"
+          elif [ $(( $(date +%s) - $(git log -1 --format=%ct) )) -gt 3888000 ]; then
+            # 45日以上コミットが無いと定期実行が自動停止されるため、生存確認コミットを入れる
+            date -u > .github/keepalive.txt
+            git add .github/keepalive.txt
+            git commit -m "自動更新の生存確認（変更なし）"
+            git push
+            echo "生存確認コミットをしました"
+          else
+            echo "変更なし"
+          fi
