@@ -1620,11 +1620,12 @@ const VIA_OVER={
 const RJ_OVER={
   '高畑１４|南陽交通広場（中島橋経由）':'Nan-yo Kotsu Hiroba', // 実車＝ハイフン「Nan-yo」（北村さん動画目視 2026-07-25 https://www.youtube.com/watch?v=XUDbXo222vU 0:33）。
                                           // 辞書はアポストロフィ「Nan'yo」＝撥音の区切り表記が実車とずれる初の実例（研究課題：他の「ん+母音」停留所でも要観察＝台帳参照）
+  '栄１７|名古屋大学（吹上経由）':'Nagoya Daigaku', // ★A 写真85（2026-08-12 7:43オアシス21）＝側面上段「栄17　Nagoya Daigaku」＝括弧なし・**スペースあり**（栄16の「スペースなしが優勢だが不確定」というメモもこれで解消）。側面はSIDE_STOPS登録済み
   '栄１６|名古屋大学（新栄三丁目経由）':'Nagoya Daigaku' // 実車＝括弧なし（北村さん確答 2026-07-26・ピカチュウ名古屋 puKbkzNqU_o／vuPK4jMHQwU の2例）。
                                           // 辞書は「Nagoya Daigaku(Nagoya University)」＝括弧付き。差し替え2例目。
                                           // ※基幹2名古屋駅は括弧付き「Nagoya Eki (Nagoya Sta.)」が実車＝括弧の扱いは行先ごとに違う（研究課題）。
-                                          // ※栄17・名駅17の名古屋大学行きは未確認＝登録しない（段階解禁）。
-                                          // ★側面上段の分かち書きは「NagoyaDaigaku」（スペースなし）が優勢だが不確定（北村さん 2026-07-26）＝スペースありで描画・要再観察⚠️
+                                          // ※~~栄17・名駅17の名古屋大学行きは未確認＝登録しない~~ →**✅栄17は決着（2026-08-21）＝写真85（7:43オアシス21）の側面上段「栄17　Nagoya Daigaku」＝括弧なし・スペースあり**＝下に登録。名駅17は引き続き未確認。
+                                          // ~~★側面上段の分かち書きは「NagoyaDaigaku」（スペースなし）が優勢だが不確定~~ →**✅スペースありで決着（2026-08-21・写真85の栄17）＝登録値のまま**
 };
 // 行先の日本語表記を差し替える便（GTFSの行先と実車LEDの行先文字が違う例。2026-08-15 吹上11で初確認・段階解禁方式）。
 // キーは『系統名|行先表示』（GTFS表記そのまま）、値＝正面LEDに描く行先文字列。ローマ字は従来どおり（元の行先の辞書引き＋RJ_OVER）。
@@ -2646,6 +2647,31 @@ const SIDE_STOPS_ORIGIN={
                                               // **共用キー3パターン（鳴尾車庫発134便／星崎発70便／笠寺駅発56便）がこれで完結**（星崎発v3.76・笠寺駅発v3.79・鳴尾車庫発v3.82）。
                                               // ★中間柱の比較＝星崎発は南区役所+地下鉄堀田／笠寺駅発は地下鉄堀田+高辻／鳴尾車庫発は星崎+地下鉄堀田＝地下鉄堀田だけ3者共通・他は始発ごとに選択が違う（研究課題①）
 };
+// ★側面ヘッダーのローマ字2段折返し（2026-08-21新設・同日テキストキー化）。
+//   実車パネルは幅が固定で、入りきらないローマ字が2段になる＝**ローマ字17文字以下は1段／18文字以上は2段**（実車観察の全件で成立）。
+//   ★折返し位置の規則＝**「どこの」＋「なに」の境目**（固有名と施設種別の境目）＝北村さんの発見 2026-08-21。
+//     市立大学病院＝*市立大学*の*病院*→Shiritsu Daigaku／Byoin ／ 名鉄神宮前＝*名鉄*の*神宮前* ／ 中川車庫前＝*中川*の*車庫前*
+//     ／ 東谷山フルーツパーク＝*東谷山*の*フルーツパーク*（「東谷山フルーツのパークじゃわけわからん」） ／ 名古屋駅＝英語補足(Nagoya Sta.)は別行
+//   ★キー＝**表示されるローマ字文字列そのもの**（系統別ではない）＝折返しはテキストの性質なので、同じ文字は全系統で同じに折り返す
+//     （例＝'Nakagawa Shako Mae'は栄23で観察→中川車庫前行きの全9系統に効く。**RJ_OVER適用後の文字列で引く**ので、
+//       実車未確認の長い辞書ローマ字はエントリが無い限り折り返さない＝段階解禁は保たれる）。
+//   ★寄せ方（写真45・写真229で確定）＝**1行目=ローマ字欄の左端・2行目=欄の右端**・系統名は2行の上下中央。
+//   ⚠️新しい18文字以上のローマ字が実車で読めたらここに1行足す。未確認の残りは『撮影ターゲット_側面ローマ字2段.md』参照。
+const RJ_WRAP={
+  'Nagoya Eki (Nagoya Sta.)':['Nagoya Eki','(Nagoya Sta.)'], // 基幹2＝めーなんのなごてつ https://www.youtube.com/shorts/6Q48aXCinjY 0:05（NKS-84）＝**初観察**／C-758＝IMG_3484（2026-08-11矢場町・半角C-758と系統名の縦位置の典拠）＝2例一致
+  'Shiritsu Daigaku Byoin':['Shiritsu Daigaku','Byoin'], // 黒川12＝IMG_3405（NS-680・16.5秒地点のコマで再確認 2026-08-21）＝★「市立大学」の「病院」＝規則の決め手になった1件
+  'Senrakudori 4-chome':['Senrakudori','4-chome'], // 栄21＝ https://www.youtube.com/watch?v=_tehblA_SNI （NS-338）
+  'Nakagawa Shako Mae':['Nakagawa','Shako Mae'], // 栄23＝北村さん動画目視 2026-08-12（写真64の車両の側面）→中川車庫前行きの全系統に効く
+  'Meitetsu Jingu Mae':['Meitetsu','Jingu Mae'], // 名駅18＝@chukichiくん 5SwdnuNXHTc 4:30〜（NS-215・2026-08-21）
+  'Shidami Kotsu Hiroba':['Shidami','Kotsu Hiroba'], // 志段味11＝写真233（90度回転補正）＝当初「1段」と誤記→北村さん再確認 2026-08-21で2段に訂正
+  'Chikatetsu Jiyugaoka':['Chikatetsu','Jiyugaoka'], // 千種巡回＝写真164（右まわり）／写真171（左まわり）＝「地下鉄」の「自由ケ丘」駅
+  'Mizuho Undojo Higashi':['Mizuho Undojo','Higashi'], // 栄20＝写真45（7:05オアシス21）＝「瑞穂運動場」の「東」。**寄せ方の典拠**（短い2行目が右端）
+  'Togokusan Fruits Park':['Togokusan','Fruits Park'], // 志段味巡回＝写真229＝★★**柱（東谷山フルーツ/パーク＝文字数）とヘッダー（意味）で折返し位置が違う実例**
+  'Midorigaoka Jutaku':['Midorigaoka','Jutaku'], // 千種13＝写真227（第6陣・側面柱と同一カット＝北村さん見返しで発見 2026-08-21）＝緑ケ丘住宅行きの全6系統に効く
+  'Shimada Hitotsuyama':['Shimada','Hitotsuyama'] // 八事12＝北村さん写真（NH-307・2026-03-06撮影＝**改正前だが2025-12体裁後＝折返し様式の典拠として有効**。柱の登録には使わない）
+};
+// C-758の側面ヘッダーは実車が半角の「C-758」（IMG_3484）＝レジストリキーの全角をそのまま出すと間延びするので表示名だけ差し替える
+const ROUTE_LABEL={'Ｃ－７５８':'C-758'};
 // ★区間で側面の柱が変わる系統（2026-08-21新設・現状C-758のみ）。キー＝『系統|行先表示』→『正面の区間表示（1つ目・2つ目）』→柱4本。
 // 根拠＝上前津（C状態）と矢場町（B状態）で柱が別物と判明＝**側面も正面と同じ区間状態で切り替わる**（n=2・2026-08-21）。
 // 段階解禁＝実車で柱まで読めたC状態のみ登録。B（矢場町・IMG_3484＝㉑）は研究材料のまま保留、A（名古屋駅BT発車時）は素材なし＝どちらも側面を出さない。
@@ -2675,7 +2701,7 @@ function buildSide(){
   try{
     // 2025年12月の実車体裁変更：上段は「系統＋英字の目的地」固定（交互切替なし）
     const ro=RJ_OVER[a.route+'|'+(a.hsFull||'')]; // v3.64：側面上段のローマ字にもRJ_OVERを適用（栄16名大＝正面と同じく括弧なし・北村さん確答 2026-07-26）
-    const c1=sideCanvas(a.route,a.hs,(ro!==undefined?ro:a.rj),cols,!!ROUTE_NONE[a.route+'|'+(a.hsFull||'')],!!SIDE_JUNKAI_TOP[a.route+'|'+(a.hsFull||'')]);
+    const c1=sideCanvas(a.route,a.hs,(ro!==undefined?ro:a.rj),cols,!!ROUTE_NONE[a.route+'|'+(a.hsFull||'')],!!SIDE_JUNKAI_TOP[a.route+'|'+(a.hsFull||'')],RJ_WRAP[a.route+'|'+(a.hsFull||'')]);
     const wrap=document.createElement('div');
     wrap.className='led';
     wrap.style.display='block';
@@ -2691,7 +2717,7 @@ function buildSide(){
     sb.innerHTML='<div class="small">side display unavailable</div>';
   }
 }
-function sideCanvas(route, hs, rj, colsIn, noRoute, junkaiTop){
+function sideCanvas(route, hs, rj, colsIn, noRoute, junkaiTop, rjWrap){
   const colw=12;
   // 柱：SIDE_STOPSに登録された実車どおりの並び（右→左＝進行方向順）
   const cols=colsIn.slice(0,4);
@@ -2703,8 +2729,12 @@ function sideCanvas(route, hs, rj, colsIn, noRoute, junkaiTop){
   //   ＝メグラス型（1列目−2列目≧2）はR=1列目長で従来と完全一致（smoke_v367担保）・2列目が同長〜長い型はRが伸びてパネルが縦に伸びる
   const rowsOf=c=>{const ss=segsOf(c); return ss.length>1? Math.max(ss[0].length, ss[1].length+2) : ss[0].length;};
   const maxlen=Math.min(10, Math.max.apply(null, cols.map(rowsOf)));
+  const ncol=cols.length;
+  const pws=cols.map(c=>segsOf(c).length>1? colw*2-1 : colw); // 折返し柱は2列ぶんの幅（列ピッチ11）
+  const sumPw=pws.reduce((a,b)=>a+b,0);
+  const colsW=4+sumPw+(ncol-1)*16+4; // 2026-08-21：ローマ字2段のとき「2行目をパネル右端に寄せる」ため、柱側の幅を先に出しておく
   // 上段：系統＋英字の目的地（2025年12月〜の実車仕様）。英語名が無い行先のみ日本語
-  let topParts, topW;
+  let topParts, topW, topH=14; // topH＝上段の高さ（既定14。ローマ字2段折返しのときだけ22＝2026-08-21）
   // noRoute（ROUTE_NONE登録便）＝上段に系統名を出さない（森.新は「Omorishako」のみ：北村さん実車確認 2026-07-19＝現行体裁）。
   // ※上.西の令和5年写真では上段が日本語「西部医療センター」だったが旧体裁（2025年12月の体裁変更前）のためローマ字を維持
   if(junkaiTop && route.endsWith('巡回')){
@@ -2714,26 +2744,36 @@ function sideCanvas(route, hs, rj, colsIn, noRoute, junkaiTop){
     topW=tbx.w;
   } else if(rj){
     const rr=rtext(rj);
-    if(noRoute){ topParts=[[rr,0,3]]; topW=rr.w; }
-    else { const rb=jb(route,10,0); topParts=[[rb,0,1],[rr,rb.w+4,3]]; topW=rb.w+4+rr.w; }
+    rjWrap=rjWrap||RJ_WRAP[rj]; // 2026-08-21テキストキー化＝実際に出すローマ字（RJ_OVER適用後）でそのまま引く
+    // 2026-08-21：RJ_WRAP登録便＝ローマ字を実車どおり2段に（1行目y=3・2行目y=11＝行ピッチ8。系統名は2行目と同じ行＝下寄せ＝IMG_3484）
+    if(rjWrap && rjWrap.length===2){
+      const r1=rtext(rjWrap[0]), r2=rtext(rjWrap[1]);
+      const rw=Math.max(r1.w,r2.w);
+      // 2026-08-21（実車照合で確定）＝**1行目は左寄せ・2行目は右寄せ**（ブロック幅＝長いほうの行）。系統名は2行の上下中央。
+      //   典拠＝写真45（栄20「Mizuho Undojo／Higashi」＝短い2行目が右端に揃う）・IMG_3405（黒川12「Shiritsu Daigaku／Byoin」同型）
+      //   ・IMG_3484（C-758「Nagoya Eki／(Nagoya Sta.)」＝2行目のほうが長い場合は1行目が左端に見える＝この式で両方説明できる）
+      //   ★実車のパネルは幅が固定で、**1行目はローマ字欄の左端・2行目は欄の右端**に寄る（写真229＝志段味巡回で確定＝
+      //     2行目のほうが長い便でも1行目が欄の左端に残る）。アプリはパネル幅が可変なので、柱側の幅(colsW)まで欄を広げて同じ見え方にする。
+      if(noRoute){ topW=Math.max(rw, colsW-8); topParts=[[r1,0,3],[r2,topW-r2.w,11]]; }
+      else { const rb=jb(ROUTE_LABEL[route]||route,10,0); topW=Math.max(rb.w+4+rw, colsW-8); topParts=[[rb,0,5],[r1,rb.w+4,3],[r2,topW-r2.w,11]]; }
+      topH=22;
+    }
+    else if(noRoute){ topParts=[[rr,0,3]]; topW=rr.w; }
+    else { const rb=jb(ROUTE_LABEL[route]||route,10,0); topParts=[[rb,0,1],[rr,rb.w+4,3]]; topW=rb.w+4+rr.w; }
   } else {
     const tbx=jb((noRoute?'':route+'　')+hs.d,10,0);
     topParts=[[tbx,0,1]];
     topW=tbx.w;
   }
-  const ncol=cols.length;
-  const pws=cols.map(c=>segsOf(c).length>1? colw*2-1 : colw); // 折返し柱は2列ぶんの幅（列ピッチ11）
-  const sumPw=pws.reduce((a,b)=>a+b,0);
-  const colsW=4+sumPw+(ncol-1)*16+4;
   const W=Math.max(colsW, topW+8);
   const colH=maxlen*11;
-  const H=14+colH+2;
+  const H=topH+colH+2;
   const m=bmNew(W,H);
   const tx=Math.max(0,Math.floor((W-topW)/2));
   topParts.forEach(p=>bmBlit(m,p[0],tx+p[1],p[2]));
   // 柱（右=起点 → 左=終点）横幅いっぱいに均等配置
   // v3.67＝幅違いの柱（折返し柱）に一般化。全柱が単柱のときは従来の座標と完全一致（floor((W-8-sumPw)/(n-1))+colw ≡ 旧step）
-  const y0=14;
+  const y0=topH;
   const gap=(ncol>1)? Math.floor((W-8-sumPw)/(ncol-1)) : 0;
   const xs=[];
   { let cur=W-4; for(let i=0;i<ncol;i++){ cur-=pws[i]; xs.push(cur); cur-=gap; } }
@@ -2781,7 +2821,7 @@ function sideCanvas(route, hs, rj, colsIn, noRoute, junkaiTop){
   // maxWidth＝1ドット6px相当の実寸まで（従来は400px固定＝PC・DPR1では1ドット3.6pxに縮んでつぶれる。
   // スマホは画面幅がこれより狭いので見た目不変。2026-08-16）
   cv.style.width='100%'; cv.style.maxWidth=(W*6)+'px'; cv.style.height='auto'; cv.style.display='block'; cv.style.margin='0 auto';
-  window._sideDbg={W:W, H:H, maxlen:maxlen, cols:cols.join('/'), topW:topW, junkaiTop:!!(junkaiTop&&route.endsWith('巡回')), rj:(rj||''), colYs:colYs, colH:colH, y0:y0, pws:pws, xs:xs, noR:!!noRoute}; // 検証用（v3.59＝7文字対応とSIDE_JUNKAI_TOPの機械検査／colYs＝柱の均等割り検査 v3.66／pws・xs＝折返し柱の幅と位置 v3.67。折返し柱のcolYsは1列目→2列目の連結）
+  window._sideDbg={W:W, H:H, topH:topH, wrap:(rjWrap?rjWrap.join('/'):''), maxlen:maxlen, cols:cols.join('/'), topW:topW, junkaiTop:!!(junkaiTop&&route.endsWith('巡回')), rj:(rj||''), colYs:colYs, colH:colH, y0:y0, pws:pws, xs:xs, noR:!!noRoute}; // 検証用（v3.59＝7文字対応とSIDE_JUNKAI_TOPの機械検査／colYs＝柱の均等割り検査 v3.66／pws・xs＝折返し柱の幅と位置 v3.67。折返し柱のcolYsは1列目→2列目の連結）
   return cv;
 }
 
@@ -3303,7 +3343,7 @@ async function debugLedPreview(){
         if(sgc){
           const sbg=document.createElement('div');
           sbg.className='led'; sbg.style.display='block'; sbg.style.marginTop='8px';
-          try{ const ro=RJ_OVER[rt+'|'+h]; sbg.appendChild(sideCanvas(rt,hp,(ro!==undefined?ro:(enOf(hp.d)||'')),sgc,!!ROUTE_NONE[rt+'|'+h],!!SIDE_JUNKAI_TOP[rt+'|'+h])); }catch(e){}
+          try{ const ro=RJ_OVER[rt+'|'+h]; sbg.appendChild(sideCanvas(rt,hp,(ro!==undefined?ro:(enOf(hp.d)||'')),sgc,!!ROUTE_NONE[rt+'|'+h],!!SIDE_JUNKAI_TOP[rt+'|'+h],RJ_WRAP[rt+'|'+h])); }catch(e){}
           card.appendChild(sbg);
           const slg=document.createElement('div');
           slg.className='small'; slg.style.textAlign='center'; slg.textContent='側面表示（この区間）';
@@ -3315,7 +3355,7 @@ async function debugLedPreview(){
     if(cols){ // 側面表示が登録済みの便はそれも出す
       const sb=document.createElement('div');
       sb.className='led'; sb.style.display='block'; sb.style.marginTop='8px';
-      try{ const ro=RJ_OVER[rt+'|'+h]; sb.appendChild(sideCanvas(rt,hp,(ro!==undefined?ro:(enOf(hp.d)||'')),cols,!!ROUTE_NONE[rt+'|'+h],!!SIDE_JUNKAI_TOP[rt+'|'+h])); }catch(e){} // v3.35：noRoute引数の渡し忘れを修正（?ledプレビューだけ側面に「森.新」が出ていた＝北村さんスクショ 2026-07-19。本体表示（buildSide）は元から正しい）
+      try{ const ro=RJ_OVER[rt+'|'+h]; sb.appendChild(sideCanvas(rt,hp,(ro!==undefined?ro:(enOf(hp.d)||'')),cols,!!ROUTE_NONE[rt+'|'+h],!!SIDE_JUNKAI_TOP[rt+'|'+h],RJ_WRAP[rt+'|'+h])); }catch(e){} // v3.35：noRoute引数の渡し忘れを修正（?ledプレビューだけ側面に「森.新」が出ていた＝北村さんスクショ 2026-07-19。本体表示（buildSide）は元から正しい）
       // v3.64：プレビューにRJ_OVERとSIDE_JUNKAI_TOPも適用（junkaiTopの渡し忘れ＝v3.59の南陽巡回で?ledプレビューだけ上段が標準になっていた・本体表示は元から正しい）
       card.appendChild(sb);
       const sl=document.createElement('div');
@@ -3328,7 +3368,7 @@ async function debugLedPreview(){
       const org=k.slice((rt+'|'+h+'|').length), oc=SIDE_STOPS_ORIGIN[k];
       const sb2=document.createElement('div');
       sb2.className='led'; sb2.style.display='block'; sb2.style.marginTop='8px';
-      try{ const ro=RJ_OVER[rt+'|'+h]; sb2.appendChild(sideCanvas(rt,hp,(ro!==undefined?ro:(enOf(hp.d)||'')),oc,!!ROUTE_NONE[rt+'|'+h],!!SIDE_JUNKAI_TOP[rt+'|'+h])); }catch(e){}
+      try{ const ro=RJ_OVER[rt+'|'+h]; sb2.appendChild(sideCanvas(rt,hp,(ro!==undefined?ro:(enOf(hp.d)||'')),oc,!!ROUTE_NONE[rt+'|'+h],!!SIDE_JUNKAI_TOP[rt+'|'+h],RJ_WRAP[rt+'|'+h])); }catch(e){}
       card.appendChild(sb2);
       const sl2=document.createElement('div');
       sl2.className='small'; sl2.style.textAlign='center'; sl2.textContent='側面表示（'+org+'発）';
