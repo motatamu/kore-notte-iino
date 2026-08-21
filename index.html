@@ -2670,6 +2670,16 @@ const RJ_WRAP={
   'Midorigaoka Jutaku':['Midorigaoka','Jutaku'], // 千種13＝写真227（第6陣・側面柱と同一カット＝北村さん見返しで発見 2026-08-21）＝緑ケ丘住宅行きの全6系統に効く
   'Shimada Hitotsuyama':['Shimada','Hitotsuyama'] // 八事12＝北村さん写真（NH-307・2026-03-06撮影＝**改正前だが2025-12体裁後＝折返し様式の典拠として有効**。柱の登録には使わない）
 };
+// ★側面ヘッダーのまわり表示（2026-08-21新設＝北村さん指摘「千種巡回とローマ字の間に回転矢印が抜けている」）。
+//   実車＝系統名のあとに**大きい回転矢印（行からはみ出す高さ）＋小さめ「右まわり/左まわり」1行**が入り、その後にローマ字（写真216＝北巡回で構成確定）。
+//   ⚠️北巡回の2キーは**写真205/216（8/13第6陣）で判読・台帳記録済みだったのに描画は未実装だった**＝「記録済み未実装」の初検出例（教訓＝ヘッダー記述と実装の突合が要る）。
+//   段階解禁＝実車でヘッダーの矢印を確認できた4キーのみ。志段味11（写真233）はまわり表記なし＝登録しない（正面MAWARI_STYLE'none'と整合）。
+const SIDE_MAWARI={
+  '北巡回|黒川（若葉通経由 左まわり）':1, // ★A 写真205＝「北巡回　↺左まわり　Kurokawa」
+  '北巡回|黒川（上飯田経由 右まわり）':1, // ★A 写真216＝「北巡回　↻右まわり　Kurokawa」（構成確定の典拠＝矢印は行からはみ出す大きさ・まわり文字は小さめ1行）
+  '千種巡回|地下鉄自由ケ丘（池下経由 右まわり）':1, // ★A 写真163/164＝「千種巡回　↻右まわり　Chikatetsu/Jiyugaoka」
+  '千種巡回|地下鉄自由ケ丘（池下経由 左まわり）':1 // ★A 写真170/171＝「千種巡回　↺左まわり　Chikatetsu/Jiyugaoka」（北村さん再提供写真 2026-08-21でも確認）
+};
 // C-758の側面ヘッダーは実車が半角の「C-758」（IMG_3484）＝レジストリキーの全角をそのまま出すと間延びするので表示名だけ差し替える
 const ROUTE_LABEL={'Ｃ－７５８':'C-758'};
 // ★区間で側面の柱が変わる系統（2026-08-21新設・現状C-758のみ）。キー＝『系統|行先表示』→『正面の区間表示（1つ目・2つ目）』→柱4本。
@@ -2745,6 +2755,12 @@ function sideCanvas(route, hs, rj, colsIn, noRoute, junkaiTop, rjWrap){
   } else if(rj){
     const rr=rtext(rj);
     rjWrap=rjWrap||RJ_WRAP[rj]; // 2026-08-21テキストキー化＝実際に出すローマ字（RJ_OVER適用後）でそのまま引く
+    // 2026-08-21：SIDE_MAWARI登録便＝系統名の後に大矢印（正面用ビットマップの2倍）＋小さめ「右/左まわり」（tbits8＝小さく目立ちにくい既知のOS依存枠）
+    const smDir=SIDE_MAWARI[route+'|'+hs.d+'（'+hs.v+'）'] ? ((hs.v.match(/(左|右)まわり/)||[])[1]||'') : '';
+    const smParts=(function(){ if(!smDir) return null;
+      const a0=mawariArrowBits(smDir+'まわり');
+      const ab={w:a0.w*2,h:a0.h*2,bits:[]}; for(let y=0;y<a0.h*2;y++){ab.bits.push([]); for(let x=0;x<a0.w*2;x++)ab.bits[y].push(a0.bits[y>>1][x>>1]);}
+      return {ab:ab, mt:tbits(smDir+'まわり',8,0)}; })();
     // 2026-08-21：RJ_WRAP登録便＝ローマ字を実車どおり2段に（1行目y=3・2行目y=11＝行ピッチ8。系統名は2行目と同じ行＝下寄せ＝IMG_3484）
     if(rjWrap && rjWrap.length===2){
       const r1=rtext(rjWrap[0]), r2=rtext(rjWrap[1]);
@@ -2755,10 +2771,20 @@ function sideCanvas(route, hs, rj, colsIn, noRoute, junkaiTop, rjWrap){
       //   ★実車のパネルは幅が固定で、**1行目はローマ字欄の左端・2行目は欄の右端**に寄る（写真229＝志段味巡回で確定＝
       //     2行目のほうが長い便でも1行目が欄の左端に残る）。アプリはパネル幅が可変なので、柱側の幅(colsW)まで欄を広げて同じ見え方にする。
       if(noRoute){ topW=Math.max(rw, colsW-8); topParts=[[r1,0,3],[r2,topW-r2.w,11]]; }
+      else if(smParts){ // まわり便（千種巡回）＝系統名(上寄り)＋大矢印＋小まわり文字＋ローマ字2段（写真163/164・170/171）
+        const rb=jb(route,10,0); const pre=rb.w+3+smParts.ab.w+2+smParts.mt.w+4;
+        topW=Math.max(pre+rw, colsW-8);
+        topParts=[[rb,0,3],[smParts.ab,rb.w+3,3],[smParts.mt,rb.w+3+smParts.ab.w+2,8],[r1,pre,3],[r2,topW-r2.w,11]];
+      }
       else { const rb=jb(ROUTE_LABEL[route]||route,10,0); topW=Math.max(rb.w+4+rw, colsW-8); topParts=[[rb,0,5],[r1,rb.w+4,3],[r2,topW-r2.w,11]]; }
       topH=22;
     }
     else if(noRoute){ topParts=[[rr,0,3]]; topW=rr.w; }
+    else if(smParts){ // まわり便・ローマ字1段（北巡回＝写真216）＝矢印は行からはみ出す＝上段を20ドットに
+      const rb=jb(route,10,0);
+      topParts=[[rb,0,2],[smParts.ab,rb.w+3,2],[smParts.mt,rb.w+3+smParts.ab.w+2,7],[rr,rb.w+3+smParts.ab.w+2+smParts.mt.w+4,4]];
+      topW=rb.w+3+smParts.ab.w+2+smParts.mt.w+4+rr.w; topH=20;
+    }
     else { const rb=jb(ROUTE_LABEL[route]||route,10,0); topParts=[[rb,0,1],[rr,rb.w+4,3]]; topW=rb.w+4+rr.w; }
   } else {
     const tbx=jb((noRoute?'':route+'　')+hs.d,10,0);
