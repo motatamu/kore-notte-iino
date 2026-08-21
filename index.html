@@ -2755,12 +2755,14 @@ function sideCanvas(route, hs, rj, colsIn, noRoute, junkaiTop, rjWrap){
   } else if(rj){
     const rr=rtext(rj);
     rjWrap=rjWrap||RJ_WRAP[rj]; // 2026-08-21テキストキー化＝実際に出すローマ字（RJ_OVER適用後）でそのまま引く
-    // 2026-08-21：SIDE_MAWARI登録便＝系統名の後に大矢印（正面用ビットマップの2倍）＋小さめ「右/左まわり」（tbits8＝小さく目立ちにくい既知のOS依存枠）
+    // 2026-08-21：SIDE_MAWARI登録便＝系統名の後に回転矢印（正面用ビットマップの1.5倍＝12ドット・行から少しはみ出す）＋
+    //   「右/左まわり」＝**系統名と同じ10ドット・同じ高さ**（北村さん確認 2026-08-21「千種巡回と左まわり/右まわりは同じ大きさと高さ」・矢印は「もうちょっと小さめ」）
     const smDir=SIDE_MAWARI[route+'|'+hs.d+'（'+hs.v+'）'] ? ((hs.v.match(/(左|右)まわり/)||[])[1]||'') : '';
     const smParts=(function(){ if(!smDir) return null;
       const a0=mawariArrowBits(smDir+'まわり');
-      const ab={w:a0.w*2,h:a0.h*2,bits:[]}; for(let y=0;y<a0.h*2;y++){ab.bits.push([]); for(let x=0;x<a0.w*2;x++)ab.bits[y].push(a0.bits[y>>1][x>>1]);}
-      return {ab:ab, mt:tbits(smDir+'まわり',8,0)}; })();
+      const AH=12, AW=14; // 1.5倍・最近傍
+      const ab={w:AW,h:AH,bits:[]}; for(let y=0;y<AH;y++){ab.bits.push([]); for(let x=0;x<AW;x++)ab.bits[y].push(a0.bits[Math.min(a0.h-1,Math.floor(y*a0.h/AH))][Math.min(a0.w-1,Math.floor(x*a0.w/AW))]);}
+      return {ab:ab, mt:jb(smDir+'まわり',10,0)}; })();
     // 2026-08-21：RJ_WRAP登録便＝ローマ字を実車どおり2段に（1行目y=3・2行目y=11＝行ピッチ8。系統名は2行目と同じ行＝下寄せ＝IMG_3484）
     if(rjWrap && rjWrap.length===2){
       const r1=rtext(rjWrap[0]), r2=rtext(rjWrap[1]);
@@ -2771,19 +2773,19 @@ function sideCanvas(route, hs, rj, colsIn, noRoute, junkaiTop, rjWrap){
       //   ★実車のパネルは幅が固定で、**1行目はローマ字欄の左端・2行目は欄の右端**に寄る（写真229＝志段味巡回で確定＝
       //     2行目のほうが長い便でも1行目が欄の左端に残る）。アプリはパネル幅が可変なので、柱側の幅(colsW)まで欄を広げて同じ見え方にする。
       if(noRoute){ topW=Math.max(rw, colsW-8); topParts=[[r1,0,3],[r2,topW-r2.w,11]]; }
-      else if(smParts){ // まわり便（千種巡回）＝系統名(上寄り)＋大矢印＋小まわり文字＋ローマ字2段（写真163/164・170/171）
+      else if(smParts){ // まわり便（千種巡回）＝系統名＋矢印＋まわり文字（系統名と同サイズ・同高さ）＋ローマ字2段（写真163/164・170/171）
         const rb=jb(route,10,0); const pre=rb.w+3+smParts.ab.w+2+smParts.mt.w+4;
         topW=Math.max(pre+rw, colsW-8);
-        topParts=[[rb,0,3],[smParts.ab,rb.w+3,3],[smParts.mt,rb.w+3+smParts.ab.w+2,8],[r1,pre,3],[r2,topW-r2.w,11]];
+        topParts=[[rb,0,3],[smParts.ab,rb.w+3,4],[smParts.mt,rb.w+3+smParts.ab.w+2,3],[r1,pre,3],[r2,topW-r2.w,11]];
       }
       else { const rb=jb(ROUTE_LABEL[route]||route,10,0); topW=Math.max(rb.w+4+rw, colsW-8); topParts=[[rb,0,5],[r1,rb.w+4,3],[r2,topW-r2.w,11]]; }
       topH=22;
     }
     else if(noRoute){ topParts=[[rr,0,3]]; topW=rr.w; }
-    else if(smParts){ // まわり便・ローマ字1段（北巡回＝写真216）＝矢印は行からはみ出す＝上段を20ドットに
+    else if(smParts){ // まわり便・ローマ字1段（北巡回＝写真216）＝系統名・まわり文字・ローマ字は同じ高さ帯・矢印だけ少しはみ出す
       const rb=jb(route,10,0);
-      topParts=[[rb,0,2],[smParts.ab,rb.w+3,2],[smParts.mt,rb.w+3+smParts.ab.w+2,7],[rr,rb.w+3+smParts.ab.w+2+smParts.mt.w+4,4]];
-      topW=rb.w+3+smParts.ab.w+2+smParts.mt.w+4+rr.w; topH=20;
+      topParts=[[rb,0,3],[smParts.ab,rb.w+3,2],[smParts.mt,rb.w+3+smParts.ab.w+2,3],[rr,rb.w+3+smParts.ab.w+2+smParts.mt.w+4,5]];
+      topW=rb.w+3+smParts.ab.w+2+smParts.mt.w+4+rr.w; topH=17;
     }
     else { const rb=jb(ROUTE_LABEL[route]||route,10,0); topParts=[[rb,0,1],[rr,rb.w+4,3]]; topW=rb.w+4+rr.w; }
   } else {
