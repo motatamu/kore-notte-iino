@@ -125,7 +125,7 @@
   <footer class="small">
     出典：名古屋市交通局「市バスGTFS-JPデータ」(CC BY 4.0) 2026年3月28日改正／名古屋市住宅都市局「SRT GTFSデータ」（<a href="https://ckan.odpt.org/dataset/srt-nagoya" target="_blank">公共交通オープンデータセンター</a>・CC BY 4.0) 2026年9月11日改正<br>
     目印・地図データ：&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors (<a href="https://opendatacommons.org/licenses/odbl/" target="_blank">ODbL</a>)　※目印は目安です。実際と異なる場合があります<br>
-    <span id="footNote">時刻表ベースの案内です。遅延には対応していません（プロトタイプ v3.991）。</span>
+    <span id="footNote">時刻表ベースの案内です。遅延には対応していません（プロトタイプ v3.992）。</span>
   </footer>
 </div>
 <div id="rideview"></div>
@@ -133,6 +133,13 @@
 <script src="data.js?v=9"></script>
 <script>
 const GD = window.GD;
+
+// ================== ODPTアクセストークン（SRTリアルタイム用・ここに貼る） ==================
+// 貼り方：開発者サイト（developer.odpt.org）の「Challenge2026DefaultApplication」に表示されている
+//         アクセストークンを、下の '' の中にそのまま貼る。 例）const ODPT_TOKEN='abcd1234…';
+// 空のままでもアプリは従来どおり動く（リアルタイム機能だけオフ）。
+// 出典：名古屋市（住宅都市局）SRT GTFSリアルタイムデータ（公共交通オープンデータセンター・CC BY 4.0）
+const ODPT_TOKEN='15vqpwkclflunlqe5ohv7zg4we64ny5ss3yvpfg7vzt1vgy39arsfmnujaso8bqu';
 
 // ================== 多言語辞書 ==================
 const LANGS=[['ja','日本語'],['en','English'],['zh','中文'],['ko','한국어'],['vi','Tiếng Việt'],['id','Indonesia'],['tl','Filipino']];
@@ -156,7 +163,8 @@ oklist:'◎ 乗ってOK（このあとの便）',arr:'→ {0}着',slow:'⏳遠�
 allok:'✓ {0}に来るバスは全部「{1}」に行きます。安心して乗ってください。',
 sideface:'🚌 バスのよこ（側面）の表示も見る',sidenote:'バスのよこ（側面）の表示',
 lastbus:'⚠️ これが今日の最終バスです！逃すと明日までありません',fewleft:'きょうはこのあと、あと{0}本だけです',
-foot:'時刻表ベースの案内です。遅延には対応していません（プロトタイプ v3.991）。',needsnet:'地図の読み込みにはインターネット接続が必要です',
+foot:'時刻表ベースの案内です。遅延には対応していません（プロトタイプ v3.992）。',needsnet:'地図の読み込みにはインターネット接続が必要です',
+rttitle:'📡 SRTリアルタイム運行情報',rtnow:'{0}時点・走行中のSRT {1}台',rtnone:'いま走行中のSRT車両はありません（運行時間外など）',rtlate:'＋{0}分おくれ',rtontime:'ほぼ定刻',rterr:'リアルタイム情報を取得できませんでした',rtalert:'お知らせ',rtveh:'SRT車両',rtfoot:'※SRTの遅れのみリアルタイム表示に対応しています。',
 dirs:['北','北東','東','南東','南','南西','西','北西'],via:'{0}',
 pwait:'◎ ここで待つ',pnot:'✕ 来ません',pwalk:'徒歩約{0}分',pgmap:'Googleマップで道順',mehere:'いまここ',
 gtouch:'地図を動かすには指2本でさわってください',gscroll:'地図を拡大するには Ctrl キーを押しながらスクロール',gscrollmac:'地図を拡大するには ⌘ キーを押しながらスクロール',
@@ -190,7 +198,8 @@ oklist:'◎ OK to board (upcoming buses)',arr:'→ arr. {0}',slow:'⏳detour',ng
 allok:'✓ Every bus at {0} goes to "{1}". Board with confidence!',
 sideface:'🚌 Show the SIDE display too',sidenote:'Side display of the bus',
 lastbus:'⚠️ This is the LAST bus today! If you miss it, there is no bus until tomorrow.',fewleft:'Only {0} more bus(es) today after this one.',
-foot:'Timetable-based guidance. Delays are not reflected (prototype v3.991).',needsnet:'Internet connection is needed to load the map',
+foot:'Timetable-based guidance. Delays are not reflected (prototype v3.992).',needsnet:'Internet connection is needed to load the map',
+rttitle:'📡 SRT real-time status',rtnow:'As of {0} — {1} SRT vehicle(s) running',rtnone:'No SRT vehicles are running right now (outside service hours, etc.)',rtlate:'+{0} min late',rtontime:'about on time',rterr:'Could not load real-time data',rtalert:'Notice',rtveh:'SRT vehicle',rtfoot:' *Only SRT delays are shown in real time.',
 dirs:['north','northeast','east','southeast','south','southwest','west','northwest'],via:'via {0}',
 pwait:'◎ Wait here',pnot:'✕ Not your bus stop',pwalk:'about {0} min walk',pgmap:'Directions (Google Maps)',mehere:'You are here',
 gtouch:'Use two fingers to move the map',gscroll:'Use Ctrl + scroll to zoom the map',gscrollmac:'Use ⌘ + scroll to zoom the map',
@@ -224,7 +233,8 @@ oklist:'◎ 可以乘坐（之后的班次）',arr:'→ {0}到达',slow:'⏳绕�
 allok:'✓ {0}的所有巴士都开往「{1}」，请放心乘坐。',
 sideface:'🚌 查看车身侧面显示',sidenote:'车身侧面显示',
 lastbus:'⚠️ 这是今天的末班车！错过就要等到明天了。',fewleft:'今天之后只剩{0}班了。',
-foot:'基于时刻表，不反映延误（测试版 v3.991）。',needsnet:'加载地图需要网络连接',
+foot:'基于时刻表，不反映延误（测试版 v3.992）。',needsnet:'加载地图需要网络连接',
+rttitle:'📡 SRT实时运行信息',rtnow:'{0}时点·运行中的SRT {1}辆',rtnone:'当前没有运行中的SRT车辆（可能在运营时间外）',rtlate:'晚点{0}分钟',rtontime:'基本准点',rterr:'无法获取实时信息',rtalert:'通知',rtveh:'SRT车辆',rtfoot:'※仅SRT的延误支持实时显示。',
 dirs:['北','东北','东','东南','南','西南','西','西北'],via:'经由{0}',
 pwait:'◎ 在此候车',pnot:'✕ 不去目的地',pwalk:'步行约{0}分钟',pgmap:'路线（谷歌地图）',mehere:'当前位置',
 gtouch:'请用两根手指移动地图',gscroll:'按住 Ctrl 并滚动以缩放地图',gscrollmac:'按住 ⌘ 并滚动以缩放地图',
@@ -258,7 +268,8 @@ oklist:'◎ 타도 되는 버스 (이후 편)',arr:'→ {0} 도착',slow:'⏳우
 allok:'✓ {0}에 오는 버스는 모두 「{1}」에 갑니다. 안심하고 타세요.',
 sideface:'🚌 옆면(측면) 표시도 보기',sidenote:'버스 옆면 표시',
 lastbus:'⚠️ 오늘의 막차입니다! 놓치면 내일까지 버스가 없습니다.',fewleft:'오늘 남은 버스는 이후 {0}대뿐입니다.',
-foot:'시간표 기준 안내이며 지연은 반영되지 않습니다 (프로토타입 v3.991).',needsnet:'지도를 불러오려면 인터넷 연결이 필요합니다',
+foot:'시간표 기준 안내이며 지연은 반영되지 않습니다 (프로토타입 v3.992).',needsnet:'지도를 불러오려면 인터넷 연결이 필요합니다',
+rttitle:'📡 SRT 실시간 운행 정보',rtnow:'{0} 기준 · 운행 중인 SRT {1}대',rtnone:'지금 운행 중인 SRT 차량이 없습니다 (운행시간 외 등)',rtlate:'+{0}분 지연',rtontime:'거의 정시',rterr:'실시간 정보를 가져오지 못했습니다',rtalert:'알림',rtveh:'SRT 차량',rtfoot:' ※SRT의 지연만 실시간으로 표시됩니다.',
 dirs:['북','북동','동','남동','남','남서','서','북서'],via:'{0} 경유',
 pwait:'◎ 여기서 대기',pnot:'✕ 목적지행 아님',pwalk:'도보 약 {0}분',pgmap:'경로 (구글 지도)',mehere:'현재 위치',
 gtouch:'지도를 움직이려면 두 손가락을 사용하세요',gscroll:'Ctrl + 스크롤로 지도 확대/축소',gscrollmac:'⌘ + 스크롤로 지도 확대/축소',
@@ -292,7 +303,8 @@ oklist:'◎ Có thể lên (các chuyến sắp tới)',arr:'→ đến {0}',slo
 allok:'✓ Mọi xe đến {0} đều đi "{1}". Cứ yên tâm lên xe!',
 sideface:'🚌 Xem cả bảng bên hông xe',sidenote:'Bảng hiển thị bên hông xe',
 lastbus:'⚠️ Đây là chuyến xe CUỐI CÙNG hôm nay! Lỡ chuyến này thì phải đợi đến mai.',fewleft:'Hôm nay chỉ còn {0} chuyến nữa sau chuyến này.',
-foot:'Theo lịch trình, chưa phản ánh chậm trễ (bản thử v3.991).',needsnet:'Cần kết nối Internet để tải bản đồ',
+foot:'Theo lịch trình, chưa phản ánh chậm trễ (bản thử v3.992).',needsnet:'Cần kết nối Internet để tải bản đồ',
+rttitle:'📡 SRT theo thời gian thực',rtnow:'Lúc {0} — {1} xe SRT đang chạy',rtnone:'Hiện không có xe SRT đang chạy (ngoài giờ hoạt động, v.v.)',rtlate:'trễ {0} phút',rtontime:'gần đúng giờ',rterr:'Không tải được dữ liệu thời gian thực',rtalert:'Thông báo',rtveh:'Xe SRT',rtfoot:' *Chỉ hiển thị thời gian thực độ trễ của SRT.',
 dirs:['bắc','đông bắc','đông','đông nam','nam','tây nam','tây','tây bắc'],via:'qua {0}',
 pwait:'◎ Chờ ở đây',pnot:'✕ Không đi điểm đến',pwalk:'đi bộ khoảng {0} phút',pgmap:'Chỉ đường (Google Maps)',mehere:'Bạn đang ở đây',
 gtouch:'Dùng hai ngón tay để di chuyển bản đồ',gscroll:'Giữ Ctrl và cuộn để thu phóng',gscrollmac:'Giữ ⌘ và cuộn để thu phóng',
@@ -326,7 +338,8 @@ oklist:'◎ Boleh naik (bus berikutnya)',arr:'→ tiba {0}',slow:'⏳memutar',ng
 allok:'✓ Semua bus di {0} menuju "{1}". Naik saja dengan tenang!',
 sideface:'🚌 Lihat juga tampilan samping bus',sidenote:'Tampilan samping bus',
 lastbus:'⚠️ Ini bus TERAKHIR hari ini! Kalau terlewat, tidak ada bus sampai besok.',fewleft:'Setelah ini tinggal {0} bus lagi hari ini.',
-foot:'Berdasarkan jadwal; keterlambatan tidak tercermin (prototipe v3.991).',needsnet:'Perlu koneksi internet untuk memuat peta',
+foot:'Berdasarkan jadwal; keterlambatan tidak tercermin (prototipe v3.992).',needsnet:'Perlu koneksi internet untuk memuat peta',
+rttitle:'📡 Info SRT waktu nyata',rtnow:'Per {0} — {1} kendaraan SRT beroperasi',rtnone:'Tidak ada SRT yang sedang beroperasi (di luar jam layanan, dll.)',rtlate:'telat {0} mnt',rtontime:'hampir tepat waktu',rterr:'Data waktu nyata tidak dapat dimuat',rtalert:'Pemberitahuan',rtveh:'Kendaraan SRT',rtfoot:' *Hanya keterlambatan SRT yang ditampilkan waktu nyata.',
 dirs:['utara','timur laut','timur','tenggara','selatan','barat daya','barat','barat laut'],via:'lewat {0}',
 pwait:'◎ Tunggu di sini',pnot:'✕ Tidak ke tujuan',pwalk:'jalan sekitar {0} menit',pgmap:'Rute (Google Maps)',mehere:'Anda di sini',
 gtouch:'Gunakan dua jari untuk menggeser peta',gscroll:'Ctrl + gulir untuk zoom',gscrollmac:'⌘ + gulir untuk zoom',
@@ -360,7 +373,8 @@ oklist:'◎ Puwedeng sakyan (mga susunod na biyahe)',arr:'→ dating {0}',slow:'
 allok:'✓ Lahat ng bus sa {0} ay papuntang "{1}". Sakay lang nang panatag!',
 sideface:'🚌 Ipakita rin ang display sa gilid ng bus',sidenote:'Display sa gilid ng bus',
 lastbus:'⚠️ Ito na ang HULING bus ngayon! Kapag naiwan ka, wala nang bus hanggang bukas.',fewleft:'{0} biyahe na lang ngayon pagkatapos nito.',
-foot:'Batay sa timetable; hindi kasama ang delay (prototype v3.991).',needsnet:'Kailangan ng internet para sa mapa',
+foot:'Batay sa timetable; hindi kasama ang delay (prototype v3.992).',needsnet:'Kailangan ng internet para sa mapa',
+rttitle:'📡 Real-time na impormasyon ng SRT',rtnow:'Bandang {0} — {1} SRT ang tumatakbo',rtnone:'Walang tumatakbong SRT ngayon (labas sa oras ng serbisyo, atbp.)',rtlate:'late ng {0} min',rtontime:'nasa oras',rterr:'Hindi makuha ang real-time na data',rtalert:'Abiso',rtveh:'Sasakyang SRT',rtfoot:' *Tanging delay ng SRT ang ipinapakita nang real-time.',
 dirs:['hilaga','hilagang-silangan','silangan','timog-silangan','timog','timog-kanluran','kanluran','hilagang-kanluran'],via:'daan sa {0}',
 pwait:'◎ Maghintay dito',pnot:'✕ Hindi papunta sa destinasyon',pwalk:'mga {0} min lakad',pgmap:'Direksyon (Google Maps)',mehere:'Nandito ka',
 gtouch:'Gumamit ng dalawang daliri para igalaw ang mapa',gscroll:'Ctrl + scroll para mag-zoom',gscrollmac:'⌘ + scroll para mag-zoom',
@@ -403,7 +417,7 @@ function applyStatic(){
   document.getElementById('lblOr').textContent=t('orname');
   document.getElementById('destInput').placeholder=t('ph1');
   document.getElementById('hereInput').placeholder=t('ph2');
-  document.getElementById('footNote').textContent=t('foot');
+  document.getElementById('footNote').textContent=t('foot')+(ODPT_TOKEN?t('rtfoot'):''); // トークン設定時＝SRTのみRT対応の注記（2026-08-22）
   document.querySelectorAll('.chg').forEach(b=>{ b.textContent=t('change'); });
   const bar=document.getElementById('langbar');
   bar.innerHTML='';
@@ -710,6 +724,8 @@ function render(){
   pendingLed=[next.r, hs, ledRj, next.h, mgSpec, originN, GD.stops[v0.pi][0]]; // 末尾＝乗車停留所名（ＳＲＴ側面のキー）
   window._nextDep=next.t; // 毎分の自動更新（下のsetInterval）が参照
   html+='<div style="text-align:center; margin-top:8px">'+t('deparr', fmt(next.t), '<b class="waitmin">'+t('waitin',wait)+'</b>', esc(sn(dest)), fmt(next.arr))+'</div>';
+  html+='<div id="rtHead" class="small" style="text-align:center"></div>'; // SRTリアルタイム：この便の遅延バッジ（照合できた時だけ・2026-08-22）
+  window._rtNextTi=next.ti;
   // 降車ナビ：この便に乗ったら押す（trip番号と乗車のりばを控えておく）
   window._rideCand={ti:next.ti, pole:v0.pi};
   html+='<button class="btn btn-blue" onclick="startRide()" style="margin-top:10px">'+t('rbtn')+'</button>';
@@ -729,7 +745,8 @@ function render(){
     const slower = v0.ok.some(y=>y.t>b.t && y.arr<b.arr);
     html+='<div><span class="t">'+fmt(b.t)+'</span><span class="rt">'+esc(b.r)+'</span>'+esc(p.d)+(p.v?' <span class="small">'+esc(p.v)+'</span>':'')
       +' <span class="small">'+t('arr', fmt(b.arr))+'</span>'
-      +(slower?' <span class="pill ng" style="font-size:12px; padding:0 8px">'+t('slow')+'</span>':'')+'</div>'; });
+      +(slower?' <span class="pill ng" style="font-size:12px; padding:0 8px">'+t('slow')+'</span>':'')
+      +'<span class="rtd" data-rtti="'+b.ti+'"></span>'+'</div>'; }); // rtd＝SRTリアルタイムの遅延バッジ差し込み口（2026-08-22）
   html+='</div>';
 
   if(v0.ng.length){
@@ -741,9 +758,12 @@ function render(){
     html+='<div style="background:var(--green-bg); border-radius:10px; padding:10px 12px; margin-top:12px; font-size:17px">'+t('allok', poleLabel(v0.pi), esc(sn(dest)))+'</div>';
   }
   html+='</div>';
+  // SRTリアルタイム（2026-08-22）：SRT便が候補に出ている時だけカードを追加（トークン未設定なら出さない＝従来どおり）
+  if(ODPT_TOKEN && v0.ok.some(b=>rtIsSrt(b.ti))) html+='<div class="card" id="rtcard"></div>';
   R.innerHTML=html;
   if(pendingLed) mountLed(pendingLed[0],pendingLed[1],pendingLed[2],pendingLed[3],pendingLed[4],pendingLed[5],pendingLed[6]);
   drawMap(mapSpec);
+  rtEnsure();
   if(poles.length>1) annotate(poles);
 }
 
@@ -3128,6 +3148,229 @@ function drawMap(spec){
   lmapObj=m;
 }
 
+// ================== SRTリアルタイム（GTFSリアルタイム 3フィード・2026-08-22） ==================
+// 方針（応募準備_チェックリスト.md）：リアルタイムはSRTだけ実装し「データがあればここまでできる（SRT）／
+//   なくてもここまでやれる（市バス）」の対比を見せる。市バスのGTFSリアルタイムは未公開＝時刻表ベースのまま。
+// ・トークン（上のODPT_TOKEN）未設定なら何も変わらない＝従来どおり動く
+// ・フィード＝VehiclePosition（車両位置）／TripUpdates（遅延）／Alert（運行情報）。すべてProtocol Buffers・CC BY 4.0
+// ・⚠️実車の運行ダイヤ版とdata.jsのダイヤ版が違う期間はtrip_idが照合できないことがある→
+//   車両位置の地図表示はダイヤ照合と独立（座標をそのまま描く）。遅延バッジだけ照合制（照合できた便のみ）
+// ・?rt を付けると取得診断パネルを表示（フィードの生存確認用。開業前でもAlert等の応答が見られる）
+const RT_URL='https://api.odpt.org/api/v4/gtfs/realtime/odpt_NagoyaHousingCityPlanningBureau_NagoyaSRT_AllLines';
+let RT_DIAG=false; try{ RT_DIAG=(new URLSearchParams(location.search).get('rt')!=null); }catch(e){}
+const RTS={ok:false, at:0, tsV:0, tsT:0, tsA:0, veh:[], delays:{}, alerts:[], busy:false};
+
+// ---- Protocol Buffers 最小デコーダ（外部ライブラリなし＝単一HTML方針。必要なフィールドだけ読む） ----
+function pbVarint(u8,i){ // 戻り＝[Number値, 次位置, 下位32bit]（下位32bitは負のint32用＝10バイトvarintでも正確）
+  let n=0, sh=1, lo=0, losh=0, b;
+  do{ b=u8[i++]; n+=(b&0x7f)*sh; sh*=128; if(losh<32){ lo=(lo|((b&0x7f)<<losh))>>>0; losh+=7; } }while(b&0x80);
+  return [n,i,lo];
+}
+function pbF32(u8,i){ return new DataView(u8.buffer,u8.byteOffset+i,4).getFloat32(0,true); }
+function pbStr(u8,s,e){ return new TextDecoder().decode(u8.subarray(s,e)); }
+function pbScan(u8,s,e,cb){ // ワイヤ形式の総なめ：cb(フィールド番号, ワイヤ型, varint値, 開始, 終了, varint下位32bit)
+  let i=s;
+  while(i<e){
+    const t1=pbVarint(u8,i); i=t1[1];
+    const f=t1[0]>>>3, wt=t1[0]&7;
+    if(wt===0){ const r=pbVarint(u8,i); cb(f,wt,r[0],0,0,r[2]); i=r[1]; }
+    else if(wt===1){ cb(f,wt,0,i,i+8,0); i+=8; }
+    else if(wt===2){ const r=pbVarint(u8,i); cb(f,wt,0,r[1],r[1]+r[0],0); i=r[1]+r[0]; }
+    else if(wt===5){ cb(f,wt,0,i,i+4,0); i+=4; }
+    else break; // 未知のワイヤ型＝安全側で打ち切り
+  }
+}
+function rtTripDesc(u8,s,e){ const t2={tid:'',date:''}; pbScan(u8,s,e,(f,w,v,s2,e2)=>{ if(f===1&&w===2)t2.tid=pbStr(u8,s2,e2); else if(f===3&&w===2)t2.date=pbStr(u8,s2,e2); }); return t2; }
+function rtTrans(u8,s,e){ // TranslatedString＝日本語優先・無ければ先頭
+  let ja='',first='';
+  pbScan(u8,s,e,(f,w,v,s2,e2)=>{ if(f===1&&w===2){
+    let txt='',lg='';
+    pbScan(u8,s2,e2,(f3,w3,v3,s3,e3)=>{ if(f3===1&&w3===2)txt=pbStr(u8,s3,e3); else if(f3===2&&w3===2)lg=pbStr(u8,s3,e3); });
+    if(!first)first=txt; if(lg.slice(0,2)==='ja')ja=txt;
+  }});
+  return ja||first;
+}
+function rtDecode(u8){ // FeedMessage → {ts, ents:[{id,veh,tu,alert}]}
+  const out={ts:0, ents:[]};
+  pbScan(u8,0,u8.length,(f,wt,v,s,e)=>{
+    if(f===1&&wt===2){ pbScan(u8,s,e,(f2,w2,v2)=>{ if(f2===3&&w2===0)out.ts=v2; }); }
+    else if(f===2&&wt===2){
+      const ent={id:'',veh:null,tu:null,alert:null};
+      pbScan(u8,s,e,(f2,w2,v2,s2,e2)=>{
+        if(f2===1&&w2===2) ent.id=pbStr(u8,s2,e2);
+        else if(f2===3&&w2===2){ // TripUpdate（1=trip 2=stop_time_update 4=timestamp 5=delay）
+          const tu={tid:'',delay:null,stuDelay:null,ts:0};
+          pbScan(u8,s2,e2,(f3,w3,v3,s3,e3,lo3)=>{
+            if(f3===1&&w3===2) tu.tid=rtTripDesc(u8,s3,e3).tid;
+            else if(f3===2&&w3===2){ // StopTimeUpdate（2=arrival 3=departure→StopTimeEventの1=delay）。後勝ち＝進行に近い情報を採用
+              let d=null;
+              pbScan(u8,s3,e3,(f4,w4,v4,s4,e4)=>{ if((f4===2||f4===3)&&w4===2){
+                pbScan(u8,s4,e4,(f5,w5,v5,s5,e5,lo5)=>{ if(f5===1&&w5===0)d=(lo5|0); });
+              }});
+              if(d!=null) tu.stuDelay=d;
+            }
+            else if(f3===4&&w3===0) tu.ts=v3;
+            else if(f3===5&&w3===0) tu.delay=(lo3|0);
+          });
+          ent.tu=tu;
+        }
+        else if(f2===4&&w2===2){ // VehiclePosition（1=trip 2=position 5=timestamp 7=stop_id 8=vehicle）
+          const vp={tid:'',lat:null,lon:null,label:'',ts:0,stopId:''};
+          pbScan(u8,s2,e2,(f3,w3,v3,s3,e3)=>{
+            if(f3===1&&w3===2) vp.tid=rtTripDesc(u8,s3,e3).tid;
+            else if(f3===2&&w3===2){ pbScan(u8,s3,e3,(f4,w4,v4,s4)=>{ if(f4===1&&w4===5)vp.lat=pbF32(u8,s4); else if(f4===2&&w4===5)vp.lon=pbF32(u8,s4); }); }
+            else if(f3===5&&w3===0) vp.ts=v3;
+            else if(f3===7&&w3===2) vp.stopId=pbStr(u8,s3,e3);
+            else if(f3===8&&w3===2){ pbScan(u8,s3,e3,(f4,w4,v4,s4,e4)=>{ if((f4===2||f4===1)&&w4===2&&!vp.label)vp.label=pbStr(u8,s4,e4); }); }
+          });
+          ent.veh=vp;
+        }
+        else if(f2===5&&w2===2){ // Alert（10=header_text 11=description_text）
+          const al={h:'',d:''};
+          pbScan(u8,s2,e2,(f3,w3,v3,s3,e3)=>{ if(f3===10&&w3===2)al.h=rtTrans(u8,s3,e3); else if(f3===11&&w3===2)al.d=rtTrans(u8,s3,e3); });
+          ent.alert=al;
+        }
+      });
+      out.ents.push(ent);
+    }
+  });
+  return out;
+}
+
+// ---- 取得と集計 ----
+function rtIsSrt(ti){ return !!(GD.feeds&&GD.feeds[1])&&ti>=GD.feeds[1].t0; }
+let _rtTiIdx=null;
+function rtTiOf(tid){ // GTFSのtrip_id文字列 → data.jsの便番号（照合できない期間はnull＝それでも車両位置は出る）
+  if(!GD.tripIds) return null;
+  if(!_rtTiIdx){ _rtTiIdx={}; for(const k in GD.tripIds) _rtTiIdx[GD.tripIds[k]]=+k; }
+  const v=_rtTiIdx[tid]; return v===undefined? null : v;
+}
+async function rtFetchOne(sfx){
+  const r=await fetch(RT_URL+sfx+'?acl:consumerKey='+encodeURIComponent(ODPT_TOKEN),{cache:'no-store'});
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  return rtDecode(new Uint8Array(await r.arrayBuffer()));
+}
+async function rtFetchAll(){
+  if(!ODPT_TOKEN||RTS.busy) return false;
+  if(Date.now()-RTS.at<25000) return false; // 取りすぎ防止（30秒タイマーとセット）
+  RTS.busy=true;
+  try{
+    const rs=await Promise.all([
+      rtFetchOne('_vehicle').catch(e=>null),
+      rtFetchOne('_trip_update').catch(e=>null),
+      rtFetchOne('_alert').catch(e=>null)
+    ]);
+    const v=rs[0],tu=rs[1],al=rs[2];
+    if(v){ RTS.veh=v.ents.filter(x=>x.veh&&x.veh.lat!=null&&x.veh.lon!=null).map(x=>x.veh); RTS.tsV=v.ts; }
+    if(tu){ RTS.delays={}; tu.ents.forEach(x=>{ if(x.tu&&x.tu.tid){ const d=(x.tu.delay!=null)?x.tu.delay:x.tu.stuDelay; if(d!=null)RTS.delays[x.tu.tid]={sec:d}; } }); RTS.tsT=tu.ts; }
+    if(al){ RTS.alerts=al.ents.filter(x=>x.alert&&(x.alert.h||x.alert.d)).map(x=>x.alert); RTS.tsA=al.ts; }
+    if(v||tu||al) RTS.ok=true;
+    RTS.at=Date.now();
+    return true;
+  }catch(e){ RTS.at=Date.now(); return false; }
+  finally{ RTS.busy=false; }
+}
+
+// ---- 画面反映 ----
+function rtDelayHtml(ti){ // 照合できた便だけ遅延バッジ（照合できない期間は空＝黙って従来表示）
+  if(ti==null||!rtIsSrt(ti)) return '';
+  const tid=GD.tripIds&&GD.tripIds[ti]; if(!tid) return '';
+  const d=RTS.delays[tid]; if(!d) return '';
+  const min=Math.round(d.sec/60);
+  return (min>=1)? ' <span style="color:var(--red);font-weight:700">'+t('rtlate',min)+'</span>'
+                 : ' <span style="color:#0d7a4f;font-weight:700">'+t('rtontime')+'</span>';
+}
+let rtMapObj=null;
+function rtDrawMap(){
+  const el=document.getElementById('rtmap');
+  if(!el||!window.L||!RTS.veh.length) return;
+  if(rtMapObj){ try{rtMapObj.remove();}catch(e){} rtMapObj=null; }
+  const m=L.map(el,{gestureHandling:true,
+    gestureHandlingOptions:{duration:1500, text:{touch:t('gtouch'), scroll:t('gscroll'), scrollMac:t('gscrollmac')}}});
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    {maxZoom:19, attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors'}).addTo(m);
+  // SRTの停留所＝位置の目安（薄い点。ダイヤ照合と無関係に出す）
+  if(GD.feeds&&GD.feeds[1]){
+    for(let i=GD.feeds[1].s0;i<GD.stops.length;i++){
+      const s=GD.stops[i];
+      L.circleMarker([s[1],s[2]],{radius:4,color:'#888',weight:1,fillColor:'#bbb',fillOpacity:0.8}).addTo(m).bindPopup(esc(sn(s[0])));
+    }
+  }
+  const pts=[];
+  RTS.veh.forEach(v=>{
+    pts.push([v.lat,v.lon]);
+    const ti=rtTiOf(v.tid);
+    let pop=t('rtveh')+(v.label?' '+esc(v.label):'');
+    if(ti!=null) pop=esc(GD.routes[GD.trips[ti][0]])+'<br>'+pop;
+    L.marker([v.lat,v.lon],{icon:L.divIcon({className:'',iconSize:[34,34],iconAnchor:[17,17],
+      html:'<div style="background:#E26B0A;color:#fff;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:18px;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.5)">🚌</div>'
+    })}).addTo(m).bindPopup(pop);
+  });
+  m.fitBounds(pts,{padding:[40,40],maxZoom:16});
+  rtMapObj=m;
+}
+function rtRender(){
+  if(!ODPT_TOKEN) return;
+  try{ document.querySelectorAll('.rtd').forEach(el=>{ el.innerHTML=rtDelayHtml(+el.getAttribute('data-rtti')); }); }catch(e){}
+  const hd=document.getElementById('rtHead');
+  if(hd&&window._rtNextTi!=null) hd.innerHTML=rtDelayHtml(window._rtNextTi);
+  const card=document.getElementById('rtcard');
+  if(!card) return;
+  let h='<div class="label">'+t('rttitle')+'</div>';
+  if(!RTS.ok){
+    h+='<div class="small">'+(RTS.at? t('rterr') : '…')+'</div>';
+  }else{
+    const tm=RTS.tsV||RTS.tsT||RTS.tsA||Math.floor(RTS.at/1000);
+    const d2=new Date(tm*1000);
+    h+='<div class="small">'+t('rtnow', fmt(d2.getHours()*60+d2.getMinutes()), RTS.veh.length)+'</div>';
+    RTS.alerts.forEach(a=>{ h+='<div class="warn" style="margin-top:6px">'+t('rtalert')+'：'+esc(a.h)+(a.d?'<br><span class="small">'+esc(a.d)+'</span>':'')+'</div>'; });
+    if(RTS.veh.length) h+='<div id="rtmap" style="height:220px; border-radius:10px; margin-top:8px"></div>';
+    else h+='<div class="small" style="margin-top:4px">'+t('rtnone')+'</div>';
+  }
+  card.innerHTML=h;
+  if(RTS.ok&&RTS.veh.length){ try{ rtDrawMap(); }catch(e){} }
+}
+let _rtTimer=0;
+function rtEnsure(){ // 結果描画のたびに呼ぶ。カードがある時だけ取得＋30秒おきの自動更新
+  if(!ODPT_TOKEN) return;
+  rtRender();
+  rtFetchAll().then(ch=>{ if(ch) rtRender(); });
+  if(!_rtTimer) _rtTimer=setInterval(()=>{
+    if(!document.getElementById('rtcard')) return; // 結果を表示していない間は静かに待つ
+    rtFetchAll().then(ch=>{ if(ch) rtRender(); });
+  },30000);
+}
+// ---- 取得診断パネル（?rt）＝実表示がまだできない期間のフィード生存確認用 ----
+async function rtDiagPanel(){
+  if(!RT_DIAG) return;
+  try{
+    const bn=document.createElement('div');
+    bn.style.cssText='background:#0b3d66;color:#fff;font-size:13px;padding:8px 10px;border-radius:10px;margin-bottom:10px;white-space:pre-wrap;word-break:break-all;';
+    bn.textContent='📡 SRTリアルタイム診断中…';
+    const cd=document.getElementById('cardDest');
+    cd.parentNode.insertBefore(bn, cd);
+    if(!ODPT_TOKEN){ bn.textContent='📡 SRTリアルタイム診断：トークン未設定です。index.html冒頭のODPT_TOKENにアクセストークンを貼ってください。'; return; }
+    const lines=['📡 SRTリアルタイム診断（?rt）　トークン：設定済み（末尾'+ODPT_TOKEN.slice(-4)+'）'];
+    for(const sfx of ['_vehicle','_trip_update','_alert']){
+      try{
+        const r=await fetch(RT_URL+sfx+'?acl:consumerKey='+encodeURIComponent(ODPT_TOKEN),{cache:'no-store'});
+        if(!r.ok){ lines.push(sfx+'：HTTP '+r.status); continue; }
+        const fm=rtDecode(new Uint8Array(await r.arrayBuffer()));
+        const d3=fm.ts? new Date(fm.ts*1000) : null;
+        let ln=sfx+'：HTTP 200・エンティティ'+fm.ents.length+'件'+(d3?('・feed時刻 '+d3.toLocaleTimeString('ja-JP')):'');
+        const v1=fm.ents.find(x=>x.veh&&x.veh.lat!=null);
+        if(v1) ln+='\n　└ 先頭車両: trip_id='+v1.veh.tid+' ('+v1.veh.lat.toFixed(5)+','+v1.veh.lon.toFixed(5)+')'+(rtTiOf(v1.veh.tid)!=null?'＝ダイヤ照合OK':'＝ダイヤ照合不可（版ちがい？座標表示は可）');
+        const t1=fm.ents.find(x=>x.tu&&x.tu.tid);
+        if(t1){ const dd=(t1.tu.delay!=null)?t1.tu.delay:t1.tu.stuDelay; ln+='\n　└ 先頭便: trip_id='+t1.tu.tid+(dd!=null?(' 遅延'+dd+'秒'):' 遅延情報なし'); }
+        const a1=fm.ents.find(x=>x.alert&&(x.alert.h||x.alert.d));
+        if(a1) ln+='\n　└ '+(a1.alert.h||a1.alert.d).slice(0,80);
+        lines.push(ln);
+      }catch(e){ lines.push(sfx+'：取得失敗（'+(e&&e.message||'ネットワーク/CORS')+'）'); }
+    }
+    bn.textContent=lines.join('\n');
+  }catch(e){}
+}
+
 // ================== 目印（OpenStreetMap Overpass API） ==================
 // キャッシュ戦略：同梱 landmarks.json（初期値）＋ TTL付き localStorage（自分で引いた差分）のハイブリッド。
 // ・新規訪問者は同梱JSONで即表示（Overpass問い合わせゼロ）
@@ -3684,6 +3927,7 @@ setInterval(function(){
 applyStatic();
 render();
 debugLedPreview();
+rtDiagPanel();
 </script>
 </body>
 </html>
