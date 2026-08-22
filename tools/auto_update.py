@@ -1,22 +1,31 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-名古屋市バス ダイヤ自動更新スクリプト（GitHub Actionsから毎週実行される）
+名古屋市バス＋SRT ダイヤ自動更新スクリプト（GitHub Actionsから毎週実行される）
 
 やること:
- 1. 名古屋市オープンデータカタログ(data.bodik.jp)のAPIでGTFS-JPデータセットを確認
+ 1. 名古屋市オープンデータカタログ(data.bodik.jp)のAPIで市バスGTFS-JPデータセットを確認
  2. 「改正日（feed_start_date）が今日以前」の最新データを選ぶ
     （改正日前に先行掲載されることがあるため。例: 2026-03-28改正版は3/18掲載）
  3. 今使っているものと同じなら何もしない（exit 0, 標準出力 "no-change"）
- 4. 新しければダウンロード→変換→検証→ data.js と tools/data-version.txt を書き換え
-    （標準出力 "updated"）
- 5. 変換や検証に失敗したら例外で異常終了（→ Actionsが失敗し、GitHubからメール通知が届く。
-    data.jsは書き換えないので、アプリは古いダイヤのまま動き続ける＝安全側）
+ 4. 新しければ市バスをダウンロード→**SRT（公共交通オープンデータセンター）もダウンロード**→
+    2フィードをマージ変換→検証→ data.js と tools/data-version.txt を書き換え（標準出力 "updated"）
+ 5. ダウンロード・変換・検証のどれかに失敗したら例外で異常終了（→ Actionsが失敗し、
+    GitHubからメール通知が届く。data.jsは書き換えないので、アプリは古いダイヤのまま動き続ける＝安全側）
+
+SRTについて（2026-08-21追加）:
+ - 応募要件対応＝ODPTセンターの名古屋市SRTデータ（住宅都市局・CC BY 4.0）を組み込む
+ - 静的GTFSのURLは認証不要（api-public）。ただし **URLに版の日付（?date=YYYYMMDD）が入る固定リンク**
+   のため、SRTのダイヤ改正時は下の SRT_ZIP_URL の日付を書き換えて手動Run workflowする
+   （市バスと違いカタログAPIでの新版自動検出は未対応。SRTは改正頻度が低い想定）
+ - SRTの改正日が未来でもそのまま取り込んでよい（calPeriod＝運行期間でアプリ側が改正日まで隠すため。
+   市バスの「改正日が来るまで切り替えない」ゲートはSRTには適用しない）
 
 テスト用の環境変数:
-  AU_API_URL   … カタログAPIのURLを差し替え（file:// 可）
-  AU_ZIP_FILE  … ダウンロードせずローカルのzipを使う
-  AU_TODAY     … 「今日」をYYYYMMDDで固定
+  AU_API_URL      … カタログAPIのURLを差し替え（file:// 可）
+  AU_ZIP_FILE     … 市バスをダウンロードせずローカルのzipを使う
+  AU_SRT_ZIP_FILE … SRTをダウンロードせずローカルのzipを使う
+  AU_TODAY        … 「今日」をYYYYMMDDで固定
 """
 import json, os, sys, tempfile, zipfile, urllib.request
 from datetime import datetime, timedelta, timezone
@@ -25,6 +34,8 @@ import convert_gtfs
 
 API_URL = os.environ.get('AU_API_URL',
     'https://data.bodik.jp/api/3/action/package_show?id=231002_7109030000_bus-gtfs-jp')
+# SRT静的GTFS（公共交通オープンデータセンター・認証不要のapi-public）。改正時はここの日付を更新
+SRT_ZIP_URL = 'https://api-public.odpt.org/api/v4/files/odpt/NagoyaHousingCityPlanningBureau/NagoyaSRT_AllLines.zip?date=20260911'
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # tools/ の一つ上
 DATA_JS = os.path.join(REPO_ROOT, 'data.js')
 VERSION_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data-version.txt')
@@ -57,6 +68,17 @@ def feed_start_date(zip_path):
         except (ValueError, IndexError):
             return '00000000'
 
+def fetch_srt(tmp):
+    """SRTのGTFSを取得して展開し、フォルダパスを返す。失敗は例外＝更新中止（安全側）"""
+    zip_path = os.environ.get('AU_SRT_ZIP_FILE')
+    if not zip_path:
+        zip_path = os.path.join(tmp, 'srt.zip')
+        download(SRT_ZIP_URL, zip_path)
+    srt_dir = os.path.join(tmp, 'srt')
+    with zipfile.ZipFile(zip_path) as z:
+        z.extractall(srt_dir)
+    return srt_dir
+
 def main():
     data = fetch_json(API_URL)
     resources = [r for r in data['result']['resources']
@@ -86,16 +108,17 @@ def main():
                 # 改正日がまだ先 → 先行掲載。ひとつ前のリソースを見る
                 print('skip (改正日%sはまだ先): %s' % (start, res.get('name', '')), file=sys.stderr)
                 continue
-            # 採用: 変換→検証→書き込み
+            # 採用: 市バス展開→SRT取得→2フィードマージ変換→検証→書き込み
             gtfs_dir = os.path.join(tmp, 'gtfs')
             with zipfile.ZipFile(zip_path) as z:
                 z.extractall(gtfs_dir)
-            GD, en = convert_gtfs.build(gtfs_dir)
+            srt_dir = fetch_srt(tmp)
+            GD, en = convert_gtfs.build([gtfs_dir, srt_dir])
             convert_gtfs.validate(GD, en)
             convert_gtfs.write_datajs(GD, en, DATA_JS)
             with open(VERSION_FILE, 'w', encoding='utf-8') as f:
                 f.write(marker + '\n')
-                f.write('%s (%s改正)\n' % (res.get('name', ''), start))
+                f.write('%s (%s改正) +SRT\n' % (res.get('name', ''), start))
             print('updated')
             return
     raise RuntimeError('有効な（改正日到来済みの）GTFSリソースが見つからない')
