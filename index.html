@@ -125,7 +125,7 @@
   <footer class="small">
     出典：名古屋市交通局「市バスGTFS-JPデータ」(CC BY 4.0) 2026年3月28日改正／名古屋市住宅都市局「SRT GTFSデータ」（<a href="https://ckan.odpt.org/dataset/srt-nagoya" target="_blank">公共交通オープンデータセンター</a>・CC BY 4.0) 2026年9月11日改正<br>
     目印・地図データ：&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors (<a href="https://opendatacommons.org/licenses/odbl/" target="_blank">ODbL</a>)　※目印は目安です。実際と異なる場合があります<br>
-    <span id="footNote">時刻表ベースの案内です。遅延には対応していません（プロトタイプ v3.992）。</span>
+    <span id="footNote">時刻表ベースの案内です。遅延には対応していません（プロトタイプ v3.993）。</span>
   </footer>
 </div>
 <div id="rideview"></div>
@@ -135,11 +135,13 @@
 const GD = window.GD;
 
 // ================== ODPTアクセストークン（SRTリアルタイム用・ここに貼る） ==================
-// 貼り方：開発者サイト（developer.odpt.org）の「Challenge2026DefaultApplication」に表示されている
-//         アクセストークンを、下の '' の中にそのまま貼る。 例）const ODPT_TOKEN='abcd1234…';
+// 貼り方：開発者サイト（developer.odpt.org）ログイン後、右上メニューの
+//         「★ODPTセンター用アクセストークン」（名称DefaultApplication）を、下の '' の中にそのまま貼る。
+//         例）const ODPT_TOKEN='abcd1234…';
+// ⚠️「チャレンジ2026専用アクセストークン」は別物＝このAPI（api.odpt.org）では Invalid になり使えない（2026-08-22実測）
 // 空のままでもアプリは従来どおり動く（リアルタイム機能だけオフ）。
 // 出典：名古屋市（住宅都市局）SRT GTFSリアルタイムデータ（公共交通オープンデータセンター・CC BY 4.0）
-const ODPT_TOKEN='15vqpwkclflunlqe5ohv7zg4we64ny5ss3yvpfg7vzt1vgy39arsfmnujaso8bqu';
+const ODPT_TOKEN='4ekmwy6q5vjbs3qoqkb79w5f46iyiys3mavv5zu9wnm15mrglg0rexcaz803oerq';
 
 // ================== 多言語辞書 ==================
 const LANGS=[['ja','日本語'],['en','English'],['zh','中文'],['ko','한국어'],['vi','Tiếng Việt'],['id','Indonesia'],['tl','Filipino']];
@@ -163,7 +165,7 @@ oklist:'◎ 乗ってOK（このあとの便）',arr:'→ {0}着',slow:'⏳遠�
 allok:'✓ {0}に来るバスは全部「{1}」に行きます。安心して乗ってください。',
 sideface:'🚌 バスのよこ（側面）の表示も見る',sidenote:'バスのよこ（側面）の表示',
 lastbus:'⚠️ これが今日の最終バスです！逃すと明日までありません',fewleft:'きょうはこのあと、あと{0}本だけです',
-foot:'時刻表ベースの案内です。遅延には対応していません（プロトタイプ v3.992）。',needsnet:'地図の読み込みにはインターネット接続が必要です',
+foot:'時刻表ベースの案内です。遅延には対応していません（プロトタイプ v3.993）。',needsnet:'地図の読み込みにはインターネット接続が必要です',
 rttitle:'📡 SRTリアルタイム運行情報',rtnow:'{0}時点・走行中のSRT {1}台',rtnone:'いま走行中のSRT車両はありません（運行時間外など）',rtlate:'＋{0}分おくれ',rtontime:'ほぼ定刻',rterr:'リアルタイム情報を取得できませんでした',rtalert:'お知らせ',rtveh:'SRT車両',rtfoot:'※SRTの遅れのみリアルタイム表示に対応しています。',
 dirs:['北','北東','東','南東','南','南西','西','北西'],via:'{0}',
 pwait:'◎ ここで待つ',pnot:'✕ 来ません',pwalk:'徒歩約{0}分',pgmap:'Googleマップで道順',mehere:'いまここ',
@@ -198,7 +200,7 @@ oklist:'◎ OK to board (upcoming buses)',arr:'→ arr. {0}',slow:'⏳detour',ng
 allok:'✓ Every bus at {0} goes to "{1}". Board with confidence!',
 sideface:'🚌 Show the SIDE display too',sidenote:'Side display of the bus',
 lastbus:'⚠️ This is the LAST bus today! If you miss it, there is no bus until tomorrow.',fewleft:'Only {0} more bus(es) today after this one.',
-foot:'Timetable-based guidance. Delays are not reflected (prototype v3.992).',needsnet:'Internet connection is needed to load the map',
+foot:'Timetable-based guidance. Delays are not reflected (prototype v3.993).',needsnet:'Internet connection is needed to load the map',
 rttitle:'📡 SRT real-time status',rtnow:'As of {0} — {1} SRT vehicle(s) running',rtnone:'No SRT vehicles are running right now (outside service hours, etc.)',rtlate:'+{0} min late',rtontime:'about on time',rterr:'Could not load real-time data',rtalert:'Notice',rtveh:'SRT vehicle',rtfoot:' *Only SRT delays are shown in real time.',
 dirs:['north','northeast','east','southeast','south','southwest','west','northwest'],via:'via {0}',
 pwait:'◎ Wait here',pnot:'✕ Not your bus stop',pwalk:'about {0} min walk',pgmap:'Directions (Google Maps)',mehere:'You are here',
@@ -233,7 +235,7 @@ oklist:'◎ 可以乘坐（之后的班次）',arr:'→ {0}到达',slow:'⏳绕�
 allok:'✓ {0}的所有巴士都开往「{1}」，请放心乘坐。',
 sideface:'🚌 查看车身侧面显示',sidenote:'车身侧面显示',
 lastbus:'⚠️ 这是今天的末班车！错过就要等到明天了。',fewleft:'今天之后只剩{0}班了。',
-foot:'基于时刻表，不反映延误（测试版 v3.992）。',needsnet:'加载地图需要网络连接',
+foot:'基于时刻表，不反映延误（测试版 v3.993）。',needsnet:'加载地图需要网络连接',
 rttitle:'📡 SRT实时运行信息',rtnow:'{0}时点·运行中的SRT {1}辆',rtnone:'当前没有运行中的SRT车辆（可能在运营时间外）',rtlate:'晚点{0}分钟',rtontime:'基本准点',rterr:'无法获取实时信息',rtalert:'通知',rtveh:'SRT车辆',rtfoot:'※仅SRT的延误支持实时显示。',
 dirs:['北','东北','东','东南','南','西南','西','西北'],via:'经由{0}',
 pwait:'◎ 在此候车',pnot:'✕ 不去目的地',pwalk:'步行约{0}分钟',pgmap:'路线（谷歌地图）',mehere:'当前位置',
@@ -268,7 +270,7 @@ oklist:'◎ 타도 되는 버스 (이후 편)',arr:'→ {0} 도착',slow:'⏳우
 allok:'✓ {0}에 오는 버스는 모두 「{1}」에 갑니다. 안심하고 타세요.',
 sideface:'🚌 옆면(측면) 표시도 보기',sidenote:'버스 옆면 표시',
 lastbus:'⚠️ 오늘의 막차입니다! 놓치면 내일까지 버스가 없습니다.',fewleft:'오늘 남은 버스는 이후 {0}대뿐입니다.',
-foot:'시간표 기준 안내이며 지연은 반영되지 않습니다 (프로토타입 v3.992).',needsnet:'지도를 불러오려면 인터넷 연결이 필요합니다',
+foot:'시간표 기준 안내이며 지연은 반영되지 않습니다 (프로토타입 v3.993).',needsnet:'지도를 불러오려면 인터넷 연결이 필요합니다',
 rttitle:'📡 SRT 실시간 운행 정보',rtnow:'{0} 기준 · 운행 중인 SRT {1}대',rtnone:'지금 운행 중인 SRT 차량이 없습니다 (운행시간 외 등)',rtlate:'+{0}분 지연',rtontime:'거의 정시',rterr:'실시간 정보를 가져오지 못했습니다',rtalert:'알림',rtveh:'SRT 차량',rtfoot:' ※SRT의 지연만 실시간으로 표시됩니다.',
 dirs:['북','북동','동','남동','남','남서','서','북서'],via:'{0} 경유',
 pwait:'◎ 여기서 대기',pnot:'✕ 목적지행 아님',pwalk:'도보 약 {0}분',pgmap:'경로 (구글 지도)',mehere:'현재 위치',
@@ -303,7 +305,7 @@ oklist:'◎ Có thể lên (các chuyến sắp tới)',arr:'→ đến {0}',slo
 allok:'✓ Mọi xe đến {0} đều đi "{1}". Cứ yên tâm lên xe!',
 sideface:'🚌 Xem cả bảng bên hông xe',sidenote:'Bảng hiển thị bên hông xe',
 lastbus:'⚠️ Đây là chuyến xe CUỐI CÙNG hôm nay! Lỡ chuyến này thì phải đợi đến mai.',fewleft:'Hôm nay chỉ còn {0} chuyến nữa sau chuyến này.',
-foot:'Theo lịch trình, chưa phản ánh chậm trễ (bản thử v3.992).',needsnet:'Cần kết nối Internet để tải bản đồ',
+foot:'Theo lịch trình, chưa phản ánh chậm trễ (bản thử v3.993).',needsnet:'Cần kết nối Internet để tải bản đồ',
 rttitle:'📡 SRT theo thời gian thực',rtnow:'Lúc {0} — {1} xe SRT đang chạy',rtnone:'Hiện không có xe SRT đang chạy (ngoài giờ hoạt động, v.v.)',rtlate:'trễ {0} phút',rtontime:'gần đúng giờ',rterr:'Không tải được dữ liệu thời gian thực',rtalert:'Thông báo',rtveh:'Xe SRT',rtfoot:' *Chỉ hiển thị thời gian thực độ trễ của SRT.',
 dirs:['bắc','đông bắc','đông','đông nam','nam','tây nam','tây','tây bắc'],via:'qua {0}',
 pwait:'◎ Chờ ở đây',pnot:'✕ Không đi điểm đến',pwalk:'đi bộ khoảng {0} phút',pgmap:'Chỉ đường (Google Maps)',mehere:'Bạn đang ở đây',
@@ -338,7 +340,7 @@ oklist:'◎ Boleh naik (bus berikutnya)',arr:'→ tiba {0}',slow:'⏳memutar',ng
 allok:'✓ Semua bus di {0} menuju "{1}". Naik saja dengan tenang!',
 sideface:'🚌 Lihat juga tampilan samping bus',sidenote:'Tampilan samping bus',
 lastbus:'⚠️ Ini bus TERAKHIR hari ini! Kalau terlewat, tidak ada bus sampai besok.',fewleft:'Setelah ini tinggal {0} bus lagi hari ini.',
-foot:'Berdasarkan jadwal; keterlambatan tidak tercermin (prototipe v3.992).',needsnet:'Perlu koneksi internet untuk memuat peta',
+foot:'Berdasarkan jadwal; keterlambatan tidak tercermin (prototipe v3.993).',needsnet:'Perlu koneksi internet untuk memuat peta',
 rttitle:'📡 Info SRT waktu nyata',rtnow:'Per {0} — {1} kendaraan SRT beroperasi',rtnone:'Tidak ada SRT yang sedang beroperasi (di luar jam layanan, dll.)',rtlate:'telat {0} mnt',rtontime:'hampir tepat waktu',rterr:'Data waktu nyata tidak dapat dimuat',rtalert:'Pemberitahuan',rtveh:'Kendaraan SRT',rtfoot:' *Hanya keterlambatan SRT yang ditampilkan waktu nyata.',
 dirs:['utara','timur laut','timur','tenggara','selatan','barat daya','barat','barat laut'],via:'lewat {0}',
 pwait:'◎ Tunggu di sini',pnot:'✕ Tidak ke tujuan',pwalk:'jalan sekitar {0} menit',pgmap:'Rute (Google Maps)',mehere:'Anda di sini',
@@ -373,7 +375,7 @@ oklist:'◎ Puwedeng sakyan (mga susunod na biyahe)',arr:'→ dating {0}',slow:'
 allok:'✓ Lahat ng bus sa {0} ay papuntang "{1}". Sakay lang nang panatag!',
 sideface:'🚌 Ipakita rin ang display sa gilid ng bus',sidenote:'Display sa gilid ng bus',
 lastbus:'⚠️ Ito na ang HULING bus ngayon! Kapag naiwan ka, wala nang bus hanggang bukas.',fewleft:'{0} biyahe na lang ngayon pagkatapos nito.',
-foot:'Batay sa timetable; hindi kasama ang delay (prototype v3.992).',needsnet:'Kailangan ng internet para sa mapa',
+foot:'Batay sa timetable; hindi kasama ang delay (prototype v3.993).',needsnet:'Kailangan ng internet para sa mapa',
 rttitle:'📡 Real-time na impormasyon ng SRT',rtnow:'Bandang {0} — {1} SRT ang tumatakbo',rtnone:'Walang tumatakbong SRT ngayon (labas sa oras ng serbisyo, atbp.)',rtlate:'late ng {0} min',rtontime:'nasa oras',rterr:'Hindi makuha ang real-time na data',rtalert:'Abiso',rtveh:'Sasakyang SRT',rtfoot:' *Tanging delay ng SRT ang ipinapakita nang real-time.',
 dirs:['hilaga','hilagang-silangan','silangan','timog-silangan','timog','timog-kanluran','kanluran','hilagang-kanluran'],via:'daan sa {0}',
 pwait:'◎ Maghintay dito',pnot:'✕ Hindi papunta sa destinasyon',pwalk:'mga {0} min lakad',pgmap:'Direksyon (Google Maps)',mehere:'Nandito ka',
@@ -417,7 +419,7 @@ function applyStatic(){
   document.getElementById('lblOr').textContent=t('orname');
   document.getElementById('destInput').placeholder=t('ph1');
   document.getElementById('hereInput').placeholder=t('ph2');
-  document.getElementById('footNote').textContent=t('foot')+(ODPT_TOKEN?t('rtfoot'):''); // トークン設定時＝SRTのみRT対応の注記（2026-08-22）
+  document.getElementById('footNote').textContent=t('foot')+(rtKey()?t('rtfoot'):''); // トークン設定時＝SRTのみRT対応の注記（2026-08-22）
   document.querySelectorAll('.chg').forEach(b=>{ b.textContent=t('change'); });
   const bar=document.getElementById('langbar');
   bar.innerHTML='';
@@ -759,7 +761,7 @@ function render(){
   }
   html+='</div>';
   // SRTリアルタイム（2026-08-22）：SRT便が候補に出ている時だけカードを追加（トークン未設定なら出さない＝従来どおり）
-  if(ODPT_TOKEN && v0.ok.some(b=>rtIsSrt(b.ti))) html+='<div class="card" id="rtcard"></div>';
+  if(rtKey() && v0.ok.some(b=>rtIsSrt(b.ti))) html+='<div class="card" id="rtcard"></div>';
   R.innerHTML=html;
   if(pendingLed) mountLed(pendingLed[0],pendingLed[1],pendingLed[2],pendingLed[3],pendingLed[4],pendingLed[5],pendingLed[6]);
   drawMap(mapSpec);
@@ -3159,6 +3161,7 @@ function drawMap(spec){
 const RT_URL='https://api.odpt.org/api/v4/gtfs/realtime/odpt_NagoyaHousingCityPlanningBureau_NagoyaSRT_AllLines';
 let RT_DIAG=false; try{ RT_DIAG=(new URLSearchParams(location.search).get('rt')!=null); }catch(e){}
 const RTS={ok:false, at:0, tsV:0, tsT:0, tsA:0, veh:[], delays:{}, alerts:[], busy:false};
+function rtKey(){ return (ODPT_TOKEN||'').trim(); } // 貼り付け時の前後空白・改行を自動除去（403の定番原因への保険・2026-08-22）
 
 // ---- Protocol Buffers 最小デコーダ（外部ライブラリなし＝単一HTML方針。必要なフィールドだけ読む） ----
 function pbVarint(u8,i){ // 戻り＝[Number値, 次位置, 下位32bit]（下位32bitは負のint32用＝10バイトvarintでも正確）
@@ -3246,12 +3249,12 @@ function rtTiOf(tid){ // GTFSのtrip_id文字列 → data.jsの便番号（照�
   const v=_rtTiIdx[tid]; return v===undefined? null : v;
 }
 async function rtFetchOne(sfx){
-  const r=await fetch(RT_URL+sfx+'?acl:consumerKey='+encodeURIComponent(ODPT_TOKEN),{cache:'no-store'});
+  const r=await fetch(RT_URL+sfx+'?acl:consumerKey='+encodeURIComponent(rtKey()),{cache:'no-store'});
   if(!r.ok) throw new Error('HTTP '+r.status);
   return rtDecode(new Uint8Array(await r.arrayBuffer()));
 }
 async function rtFetchAll(){
-  if(!ODPT_TOKEN||RTS.busy) return false;
+  if(!rtKey()||RTS.busy) return false;
   if(Date.now()-RTS.at<25000) return false; // 取りすぎ防止（30秒タイマーとセット）
   RTS.busy=true;
   try{
@@ -3310,7 +3313,7 @@ function rtDrawMap(){
   rtMapObj=m;
 }
 function rtRender(){
-  if(!ODPT_TOKEN) return;
+  if(!rtKey()) return;
   try{ document.querySelectorAll('.rtd').forEach(el=>{ el.innerHTML=rtDelayHtml(+el.getAttribute('data-rtti')); }); }catch(e){}
   const hd=document.getElementById('rtHead');
   if(hd&&window._rtNextTi!=null) hd.innerHTML=rtDelayHtml(window._rtNextTi);
@@ -3332,7 +3335,7 @@ function rtRender(){
 }
 let _rtTimer=0;
 function rtEnsure(){ // 結果描画のたびに呼ぶ。カードがある時だけ取得＋30秒おきの自動更新
-  if(!ODPT_TOKEN) return;
+  if(!rtKey()) return;
   rtRender();
   rtFetchAll().then(ch=>{ if(ch) rtRender(); });
   if(!_rtTimer) _rtTimer=setInterval(()=>{
@@ -3349,12 +3352,21 @@ async function rtDiagPanel(){
     bn.textContent='📡 SRTリアルタイム診断中…';
     const cd=document.getElementById('cardDest');
     cd.parentNode.insertBefore(bn, cd);
-    if(!ODPT_TOKEN){ bn.textContent='📡 SRTリアルタイム診断：トークン未設定です。index.html冒頭のODPT_TOKENにアクセストークンを貼ってください。'; return; }
-    const lines=['📡 SRTリアルタイム診断（?rt）　トークン：設定済み（末尾'+ODPT_TOKEN.slice(-4)+'）'];
+    if(!rtKey()){ bn.textContent='📡 SRTリアルタイム診断：トークン未設定です。index.html冒頭のODPT_TOKENにアクセストークンを貼ってください。'; return; }
+    const lines=['📡 SRTリアルタイム診断（?rt）　トークン：設定済み（末尾'+rtKey().slice(-4)+'・'+rtKey().length+'文字'
+      +(ODPT_TOKEN!==rtKey()?'・⚠️前後の空白/改行を自動除去して試します':'')
+      +(/[^\x21-\x7e]/.test(rtKey())?'・⚠️半角英数以外の文字が混ざっています（全角・かな等）＝コピーし直し推奨':'')+'）'];
+    let had403=false, had503=false, hadErr=false;
     for(const sfx of ['_vehicle','_trip_update','_alert']){
       try{
-        const r=await fetch(RT_URL+sfx+'?acl:consumerKey='+encodeURIComponent(ODPT_TOKEN),{cache:'no-store'});
-        if(!r.ok){ lines.push(sfx+'：HTTP '+r.status); continue; }
+        const r=await fetch(RT_URL+sfx+'?acl:consumerKey='+encodeURIComponent(rtKey()),{cache:'no-store'});
+        if(!r.ok){
+          let bt=''; try{ bt=(await r.text()).slice(0,160).replace(/\s+/g,' '); }catch(e){}
+          lines.push(sfx+'：HTTP '+r.status+(bt?('　応答: '+bt):''));
+          if(r.status===403) had403=true;
+          if(r.status===503) had503=true;
+          continue;
+        }
         const fm=rtDecode(new Uint8Array(await r.arrayBuffer()));
         const d3=fm.ts? new Date(fm.ts*1000) : null;
         let ln=sfx+'：HTTP 200・エンティティ'+fm.ents.length+'件'+(d3?('・feed時刻 '+d3.toLocaleTimeString('ja-JP')):'');
@@ -3365,7 +3377,21 @@ async function rtDiagPanel(){
         const a1=fm.ents.find(x=>x.alert&&(x.alert.h||x.alert.d));
         if(a1) ln+='\n　└ '+(a1.alert.h||a1.alert.d).slice(0,80);
         lines.push(ln);
-      }catch(e){ lines.push(sfx+'：取得失敗（'+(e&&e.message||'ネットワーク/CORS')+'）'); }
+      }catch(e){ lines.push(sfx+'：取得失敗（'+(e&&e.message||'ネットワーク/CORS')+'）'); hadErr=true; }
+    }
+    if(had403){
+      lines.push('');
+      lines.push('※403（Invalid acl:consumerKey）＝トークンが受け付けられていません：');
+      lines.push('① 貼るのは開発者サイト右上メニューの「ODPTセンター用アクセストークン」（名称DefaultApplication）。「チャレンジ2026専用アクセストークン」はこのAPIでは使えない（2026-08-22実測＝Invalidになる）');
+      lines.push('② アドレス欄で直接テスト＝ '+RT_URL+'_alert?acl:consumerKey=（トークン） を開いて切り分け');
+    }
+    if(had503){
+      lines.push('');
+      lines.push('※503＝トークンは受理されており、フィード配信側がいま停止中（運行時間外・配信開始前など。2026-08-22夜に全フィード503を実測）。SRT運行日（金土日月・祝）の9:02〜19時ごろに再確認を');
+    }
+    if(hadErr){
+      lines.push('');
+      lines.push('※取得失敗（Failed to fetch等）＝CORSまたはネットワーク。運行時間中に再確認し、続くようならこの画面のスクショを引き継ぎへ');
     }
     bn.textContent=lines.join('\n');
   }catch(e){}
