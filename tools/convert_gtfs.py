@@ -9,6 +9,11 @@ GTFS-JP → data.js 変換スクリプト（複数フィード対応版）
   python3 convert_gtfs.py <市バスGTFSフォルダ> <SRT GTFSフォルダ> <出力data.jsパス>
     …フォルダを2つ以上並べると順にマージする。1つ目＝主フィード（名古屋市交通局・市バス）、
       2つ目以降＝追加フィード（名古屋市住宅都市局・SRTなど）。
+  同じ発行者（feed_publisher_name）の追加フィードを複数並べると「新旧の版」とみなし、
+  古い版のcalPeriodを新しい版の開始前日で自動的に打ち切る（重複便の防止）。
+  例: SRTの現行版(2026-02-13改正)＋新版(2026-09-11改正)を両方入れると、
+      現行版は2026-09-10まで・新版は2026-09-11からとアプリ側で自動で切り替わる。
+      打ち切り期間の外にはみ出すcalendar_dates（祝日運行の追加等）も同時に除去する。
 
 ※ 市バス1フィードだけで変換した場合、v3.97時点の公開data.jsをバイト単位で完全再現できる
    （2026-08-21検証済み＝マージ機構が市バス部分に一切波及しないことの担保）。
@@ -57,6 +62,10 @@ def _strip_iki(s):
     """stop_headsignの末尾「 行き」を落とす（SRTの表記規約。アプリの行先モデル＝地名）"""
     return re.sub(r'[ 　]*行き$', '', s)
 
+# 便種別（行先ではない語）。SRT現行版(2026-02-13)はtrip_headsign/stop_headsignに
+# 「始発便」「最終便」等が入っている＝そのまま出すと行先「始発便」になる→終点の停留所名で置き換える
+_BENTYPE = re.compile(r'^(通常|始発|次発|最終)便$')
+
 def _feed_credit(gtfs_dir, default_name):
     fi_path = os.path.join(gtfs_dir, 'feed_info.txt')
     if os.path.exists(fi_path):
@@ -66,6 +75,56 @@ def _feed_credit(gtfs_dir, default_name):
             if len(d) == 8:
                 return '%s %s-%s-%s改正 (CC BY 4.0)' % (default_name, d[:4], d[4:6], d[6:8])
     return default_name
+
+def _feed_pub_start(gtfs_dir):
+    """feed_info.txtから (発行者名, 開始日YYYYMMDD) を読む（版重複の打ち切り判定用）"""
+    fi_path = os.path.join(gtfs_dir, 'feed_info.txt')
+    if os.path.exists(fi_path):
+        fi = read_csv(fi_path)
+        if fi:
+            return (fi[0].get('feed_publisher_name', '') or '',
+                    fi[0].get('feed_start_date', '') or '')
+    return ('', '')
+
+def _prev_day(yyyymmdd):
+    from datetime import datetime, timedelta
+    return (datetime.strptime(yyyymmdd, '%Y%m%d') - timedelta(days=1)).strftime('%Y%m%d')
+
+def _cap_overlapping_extras(GD, extras):
+    """同じ発行者の追加フィードが複数あるとき、古い版のcalPeriodを新しい版の開始前日で打ち切り、
+       打ち切り後の期間外に残るcalendar_dates（祝日追加等）からも該当ダイヤを取り除く。
+       extras＝[{'pub':発行者, 'start':開始日, 'sv0':ダイヤ開始index, 'sv1':終了index}]（並び順は入力順）"""
+    by_pub = {}
+    for e in extras:
+        by_pub.setdefault(e['pub'], []).append(e)
+    for pub, group in by_pub.items():
+        if len(group) < 2 or not pub:
+            continue
+        group.sort(key=lambda e: e['start'])
+        for older, newer in zip(group, group[1:]):
+            if not (len(older['start']) == 8 and len(newer['start']) == 8):
+                continue
+            cap = _prev_day(newer['start'])
+            capped = set()
+            for si in range(older['sv0'], older['sv1']):
+                pr = GD['calPeriod'].get(si)
+                if pr and pr[1] > cap:
+                    pr[1] = cap
+                    capped.add(si)
+            if not capped:
+                continue
+            # 期間外のcalendar_dates（例: 打ち切り後の祝日運行追加）から打ち切り済みダイヤを除去
+            for d in list(GD['calendarDates'].keys()):
+                ex = GD['calendarDates'][d]
+                out_of_range = any(d < GD['calPeriod'][si][0] or d > GD['calPeriod'][si][1]
+                                   for si in capped if si in GD['calPeriod'])
+                if not out_of_range:
+                    continue
+                for key in ('add', 'del'):
+                    ex[key] = [si for si in ex[key]
+                               if not (si in capped and (d < GD['calPeriod'][si][0] or d > GD['calPeriod'][si][1]))]
+                if not ex['add'] and not ex['del']:
+                    del GD['calendarDates'][d]
 
 def build_feed(gtfs_dir, GD, en, extra=False, pole_default='', credit_name=''):
     """1フィードをGDへ追記する。extra=True＝追加フィード（SRT）扱い＝
@@ -85,12 +144,15 @@ def build_feed(gtfs_dir, GD, en, extra=False, pole_default='', credit_name=''):
         pc = row.get('platform_code', '') or ''
         if extra and not pc:
             pc = pole_default
+        # 追加フィードの停留所名は前後の空白（全角含む）を除去＝SRT現行版の「栄　」等を
+        # 市バス・SRT新版の「栄」と同じ停留所グループに正しく合流させる（主フィードは触らない）
+        sname = row['stop_name'].strip() if extra else row['stop_name']
         idx = len(stops)
         stopid_to_idx[row['stop_id']] = idx
-        stopid_to_name[row['stop_id']] = row['stop_name']
+        stopid_to_name[row['stop_id']] = sname
         if extra:
             GD['stopIds'][idx] = row['stop_id']
-        stops.append([row['stop_name'], round(float(row['stop_lat']), 6),
+        stops.append([sname, round(float(row['stop_lat']), 6),
                       round(float(row['stop_lon']), 6), pc, param])
 
     # ---- routes ----
@@ -153,16 +215,21 @@ def build_feed(gtfs_dir, GD, en, extra=False, pole_default='', credit_name=''):
             pat_to_idx[pat] = len(patterns)
             patterns.append(list(pat))
         hs = row.get('trip_headsign', '') or ''
+        # 追加フィード＝便種別（始発便・最終便等）が行先欄に入っていたら終点の停留所名に置き換える
+        if extra and _BENTYPE.match(hs):
+            hs = stops[pat[-1]][0]
         if hs not in hs_to_idx:
             hs_to_idx[hs] = len(headsigns)
             headsigns.append(hs)
         trip = [routeid_to_idx[row['route_id']], pat_to_idx[pat],
                 svc_to_idx[row['service_id']], hs_to_idx[hs], times]
         # 停留所ごとの行先（stop_headsign）：1つでも入っていればhsSeqを付ける
-        if any(x[3] for x in st):
+        # （便種別が入っている停留所は「無し」扱い＝上の行先（終点名に置換済み）へフォールバック）
+        sh_list = [('' if (extra and _BENTYPE.match(x[3])) else x[3]) for x in st]
+        if any(sh_list):
             seq = []
-            for x in st:
-                s_hs = _strip_iki(x[3]) if x[3] else hs
+            for x, sh in zip(st, sh_list):
+                s_hs = _strip_iki(sh) if sh else hs
                 if s_hs not in hs_to_idx:
                     hs_to_idx[s_hs] = len(headsigns)
                     headsigns.append(s_hs)
@@ -179,6 +246,8 @@ def build_feed(gtfs_dir, GD, en, extra=False, pole_default='', credit_name=''):
         tbl, fld = row.get('table_name', ''), row.get('field_name', '')
         if tbl == 'stops' and fld == 'stop_name':
             key = row.get('field_value') or stopid_to_name.get(row.get('record_id') or '', '')
+            if extra:
+                key = key.strip()
             if not key:
                 continue
             if row['language'] == 'ja-Hrkt' and key not in yomi:
@@ -205,12 +274,18 @@ def build(gtfs_dirs):
           'yomi': {}, 'feed': '', 'feeds': [], 'calPeriod': {}, 'tripIds': {}, 'stopIds': {}}
     en = {}
     credits = []
+    extras = []
     for i, d in enumerate(gtfs_dirs):
         extra = (i > 0)
         name = '名古屋市（住宅都市局）SRT GTFS' if extra else '名古屋市交通局 GTFS-JP'
         credit = _feed_credit(d, name)
         credits.append(credit)
+        sv0 = len(GD['services'])
         build_feed(d, GD, en, extra=extra, pole_default='SRT', credit_name=credit)
+        if extra:
+            pub, start = _feed_pub_start(d)
+            extras.append({'pub': pub, 'start': start, 'sv0': sv0, 'sv1': len(GD['services'])})
+    _cap_overlapping_extras(GD, extras)
     GD['feed'] = '＋'.join(credits)
     # 追加フィードが無いときは追加キーを落とす（市バス単独＝従来のdata.jsとバイト一致）
     if len(gtfs_dirs) == 1:
@@ -248,6 +323,19 @@ def validate(GD, en):
         assert '名駅－栄ルート' in GD['routes'] and '名駅－名城ルート' in GD['routes'], 'SRTの2ルートが無い'
         srt_trips = [t for t in GD['trips'] if len(t) == 6]
         assert len(srt_trips) >= 10, 'SRTのhsSeq付き便が少なすぎる: %d' % len(srt_trips)
+        # 同じtrip_idが複数フィードにあるとき（SRTの新旧版）、運行期間が重ならないこと
+        # （重なると同じ便が二重に出る＋GTFS-RT照合が曖昧になる）
+        by_tid = {}
+        for ti, tid in GD['tripIds'].items():
+            by_tid.setdefault(tid, []).append(int(ti))
+        for tid, tis in by_tid.items():
+            if len(tis) < 2:
+                continue
+            prs = [GD['calPeriod'].get(GD['trips'][ti][2]) for ti in tis]
+            assert all(prs), '重複trip_id %s に期間なしダイヤ' % tid
+            prs.sort()
+            for a, b in zip(prs, prs[1:]):
+                assert a[1] < b[0], '重複trip_id %s の運行期間が重なる: %s / %s' % (tid, a, b)
 
 def write_datajs(GD, en, out_path):
     with open(out_path, 'w', encoding='utf-8') as f:

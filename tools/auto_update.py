@@ -8,8 +8,8 @@
  2. 「改正日（feed_start_date）が今日以前」の最新データを選ぶ
     （改正日前に先行掲載されることがあるため。例: 2026-03-28改正版は3/18掲載）
  3. 今使っているものと同じなら何もしない（exit 0, 標準出力 "no-change"）
- 4. 新しければ市バスをダウンロード→**SRT（公共交通オープンデータセンター）もダウンロード**→
-    2フィードをマージ変換→検証→ data.js と tools/data-version.txt を書き換え（標準出力 "updated"）
+ 4. 新しければ市バスをダウンロード→**SRT（公共交通オープンデータセンター・現行版＋新版）もダウンロード**→
+    全フィードをマージ変換→検証→ data.js と tools/data-version.txt を書き換え（標準出力 "updated"）
  5. ダウンロード・変換・検証のどれかに失敗したら例外で異常終了（→ Actionsが失敗し、
     GitHubからメール通知が届く。data.jsは書き換えないので、アプリは古いダイヤのまま動き続ける＝安全側）
 
@@ -35,7 +35,13 @@ import convert_gtfs
 API_URL = os.environ.get('AU_API_URL',
     'https://data.bodik.jp/api/3/action/package_show?id=231002_7109030000_bus-gtfs-jp')
 # SRT静的GTFS（公共交通オープンデータセンター・認証不要のapi-public）。改正時はここの日付を更新
-SRT_ZIP_URL = 'https://api-public.odpt.org/api/v4/files/odpt/NagoyaHousingCityPlanningBureau/NagoyaSRT_AllLines.zip?date=20260911'
+# 現行版（2026-02-13改正）＋新版（2026-09-11改正）の2本立て（2026-08-23）＝
+#   convert_gtfs側が同じ発行者の旧版calPeriodを新版開始前日で自動打ち切り＝アプリは9/11に自動切り替え。
+#   2027-03-31（現行版の期限）を過ぎたら20260213のURLはこのリストから外してよい。
+SRT_ZIP_URLS = [
+    'https://api-public.odpt.org/api/v4/files/odpt/NagoyaHousingCityPlanningBureau/NagoyaSRT_AllLines.zip?date=20260213',
+    'https://api-public.odpt.org/api/v4/files/odpt/NagoyaHousingCityPlanningBureau/NagoyaSRT_AllLines.zip?date=20260911',
+]
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # tools/ の一つ上
 DATA_JS = os.path.join(REPO_ROOT, 'data.js')
 VERSION_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data-version.txt')
@@ -69,15 +75,24 @@ def feed_start_date(zip_path):
             return '00000000'
 
 def fetch_srt(tmp):
-    """SRTのGTFSを取得して展開し、フォルダパスを返す。失敗は例外＝更新中止（安全側）"""
-    zip_path = os.environ.get('AU_SRT_ZIP_FILE')
-    if not zip_path:
-        zip_path = os.path.join(tmp, 'srt.zip')
-        download(SRT_ZIP_URL, zip_path)
-    srt_dir = os.path.join(tmp, 'srt')
-    with zipfile.ZipFile(zip_path) as z:
-        z.extractall(srt_dir)
-    return srt_dir
+    """SRTのGTFS（複数版）を取得して展開し、フォルダパスのリストを返す。失敗は例外＝更新中止（安全側）
+       テスト用: AU_SRT_ZIP_FILE にzipパスをカンマ区切りで並べるとダウンロードせずそれを使う"""
+    env = os.environ.get('AU_SRT_ZIP_FILE')
+    if env:
+        zip_paths = [p.strip() for p in env.split(',') if p.strip()]
+    else:
+        zip_paths = []
+        for i, url in enumerate(SRT_ZIP_URLS):
+            zp = os.path.join(tmp, 'srt%d.zip' % i)
+            download(url, zp)
+            zip_paths.append(zp)
+    srt_dirs = []
+    for i, zp in enumerate(zip_paths):
+        srt_dir = os.path.join(tmp, 'srt%d' % i)
+        with zipfile.ZipFile(zp) as z:
+            z.extractall(srt_dir)
+        srt_dirs.append(srt_dir)
+    return srt_dirs
 
 def main():
     data = fetch_json(API_URL)
@@ -112,8 +127,8 @@ def main():
             gtfs_dir = os.path.join(tmp, 'gtfs')
             with zipfile.ZipFile(zip_path) as z:
                 z.extractall(gtfs_dir)
-            srt_dir = fetch_srt(tmp)
-            GD, en = convert_gtfs.build([gtfs_dir, srt_dir])
+            srt_dirs = fetch_srt(tmp)
+            GD, en = convert_gtfs.build([gtfs_dir] + srt_dirs)
             convert_gtfs.validate(GD, en)
             convert_gtfs.write_datajs(GD, en, DATA_JS)
             with open(VERSION_FILE, 'w', encoding='utf-8') as f:
