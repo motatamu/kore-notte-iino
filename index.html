@@ -2141,8 +2141,11 @@ function srtCanvas(route, hs, spec){
   const numStr=SRT_NUM[route]||'01';
   const badgeW=6+srtLogoBits().w+4+tbits(numStr,34,0).w+6;
   // 行先アイコン：1＝駅ピクト（名駅－栄・上下いっぱい44x56）／'castle'＝天守・'eki2'＝電車（名城ルート・27x33を高さ44に拡大＝行先ブロックの縦中央）
-  const pict=spec.pict===1? srtEkiPict() : spec.pict==='castle'? bmScale(srtCastlePict(),44) : spec.pict==='eki2'? bmScale(srtEki2Pict(),44) : null; // 名城のアイコンは27x33→高さ44（行先ブロックの縦中央）
   const three=!!spec.rj2; // 3段（行先／for ◯◯／英字2行目）＝名古屋駅太閤通口で実車確認
+  // 名城ルート（02）の2段＝実車は行先の漢字がバッジに迫る大きさ（写真01＝名古屋城）→行先38ドット・アイコン48（iPhone実機で「小さい」＝北村さん指摘 2026-09-12）。01（名駅－栄）は不変
+  const big=(numStr==='02' && !three);
+  const pictH=big?48:44;
+  const pict=spec.pict===1? srtEkiPict() : spec.pict==='castle'? bmScale(srtCastlePict(),pictH) : spec.pict==='eki2'? bmScale(srtEki2Pict(),pictH) : null; // 名城のアイコンは27x33→高さ44/48（行先ブロックの縦中央）
   // 行先＝dsm指定があれば「前半（大）＋後半（小・下揃え）」に分けて1つのビットマップに合成（名古屋駅太閤通口＝北村さん指摘 2026-09-12）
   let db;
   if(spec.dsm && hs.d.endsWith(spec.dsm) && hs.d.length>spec.dsm.length){
@@ -2150,7 +2153,7 @@ function srtCanvas(route, hs, spec){
     const mm=bmNew(big.w+2+sm.w, big.h);
     bmBlit(mm,big,0,0); bmBlit(mm,sm,big.w+2,big.h-sm.h-1); // 小は下揃え（ベースラインを大に寄せる）
     db={w:mm.w,h:mm.h,bits:mm.g};
-  } else db=tbits(hs.d,three?28:30,0);
+  } else db=tbits(hs.d,three?28:(big?38:30),0);
   const rjh=spec.rjh||13;
   let rsx=spec.rjsx||1;
   if(three && spec.rj2 && /^for /.test(spec.rj||'')){ // 3段＝「for」は名の下・2行目の末尾は口の下・2行目の頭は1行目のNの位置（北村さん確認 2026-09-12）→横縮尺を行先幅に合わせて決める
@@ -2165,7 +2168,7 @@ function srtCanvas(route, hs, spec){
   srtBadge(m, 8, 2, 56, numStr); // バッジ＝左端固定・上下いっぱい（北村さん指摘 2026-08-22＝本番確認後）
   let x0=8+badgeW+8+Math.max(0, Math.floor((W-(8+badgeW+8)-content2-8)/2));
   // 行先ブロックの縦位置：2段＝行先y8〜38・英字y42〜55（v3.99のまま）／3段＝行先y2〜30・英字y32〜45・y46〜59
-  const destY=three?2:8, rjY=three?30:42, rj2Y=60-rjh; // 3段＝行先の直下から英字2行をぎゅっと詰めて下端まで（実車写真04）
+  const destY=three?2:(big?6:8), rjY=three?30:(big?45:42), rj2Y=60-rjh; // 3段＝行先の直下から英字2行をぎゅっと詰めて下端まで（実車写真04）／big＝行先y6〜44・英字y45〜58
   if(pict){
     const py=(pict.h>=56)? 2 : destY+Math.max(0, Math.floor(((three?59:55)-destY-pict.h)/2)); // 小アイコンは行先ブロックの縦中央
     bmBlit(m,pict,x0,py); x0+=pict.w+6;
