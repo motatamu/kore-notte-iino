@@ -19,11 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-Scope note (補足):
-- This license covers the source code in this repository (index.html, tools/, workflow files).
-- data.js is derived from open data published under CC BY 4.0 by 名古屋市交通局 and 名古屋市住宅都市局
-  (via 公共交通オープンデータセンター). Attribution to the original publishers is required when reusing it.
-- lib/ (Leaflet: BSD-2-Clause, Leaflet.GestureHandling: MIT) and the PixelMplus fonts (M+ FONT LICENSE)
-  are third-party works distributed under their own licenses.
