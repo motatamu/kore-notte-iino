@@ -129,7 +129,7 @@
   <footer class="small">
     出典：名古屋市交通局「市バスGTFS-JPデータ」(CC BY 4.0) 2026年3月28日改正／名古屋市住宅都市局「SRT GTFSデータ」（<a href="https://ckan.odpt.org/dataset/srt-nagoya" target="_blank">公共交通オープンデータセンター</a>・CC BY 4.0) 2026年2月13日・9月11日改正<br>
     目印・地図データ：&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors (<a href="https://opendatacommons.org/licenses/odbl/" target="_blank">ODbL</a>)　※目印は目安です。実際と異なる場合があります<br>
-    <span id="footNote">時刻表ベースの案内です。遅延には対応していません（プロトタイプ v4.5）。</span>
+    <span id="footNote">時刻表ベースの案内です。遅延には対応していません（プロトタイプ v4.6）。</span>
   </footer>
 </div>
 <div id="rideview"></div>
@@ -157,7 +157,7 @@ const LANGS=[['ja','日本語'],['en','English'],['zh','中文'],['ko','한국�
 const I18N={
 ja:{sub:'名古屋市バス版プロトタイプ',step1:'降りたいバス停（目的地）',step2:'いまいるバス停',change:'変更する',
 ph1:'例：四軒家',ph2:'例：守山プール',gps:'📍 いまの場所からさがす',orname:'または名前でさがす',
-locating2:'位置を測っています…（誤差 ±{0}m）',gpsambig:'📍 GPSの誤差が±{0}mあり、のりばまでは絞れません。目の前ののりば番号を見て、地図の印をタップしてください。',pickhere:'📍 ここにいる',locating:'位置を取得中…',noloc:'位置情報が使えません。名前でさがしてください。',nostop:'近く(800m以内)にバス停が見つかりませんでした。名前でさがしてください。',
+locating2:'位置を測っています…（誤差 ±{0}m）',gpsambig:'📍 GPSの誤差が±{0}mあり、のりばまでは絞れません。目の前ののりば番号を見て、地図の印をタップしてください。',pickhere:'📍 ここにいる',gpsfar:'📍 いちばん近いバス停は「{0}」（{1}へ約{2}m）です。のりばは着いてから、地図の印をタップして選んでください。',locating:'位置を取得中…',noloc:'位置情報が使えません。名前でさがしてください。',nostop:'近く(800m以内)にバス停が見つかりませんでした。名前でさがしてください。',
 notfound:'その名前は見つかりません。似た名前のバス停：',same:'目的地といまの場所が同じです 😊',
 nodirect:'😢 この時間、「{0}」から「{1}」へ直接行くバスはありません。',nodirect_never:'😢 「{0}」から「{1}」へ直接行くバスは、どの曜日・時間帯にもありません。乗りかえは下のGoogleマップで探してください。',nodirect_today:'😢 今日の「{0}」から「{1}」へ行くバスは終わりました（最終 {2}発）。次は{3}の{4}発です。',nodirect_otherday:'😢 今日は「{0}」から「{1}」へ直接行くバスの運行がありません。次は{3}の{4}発です。',tomorrow:'明日',wd:['日','月','火','水','木','金','土'],datefmt:'{0}/{1}（{2}）',walkable:'🚶 でも、歩いて行ける近くのバス停から乗れます！',
 towalk:'{0}へ約{1}m（徒歩{2}分）・{3}発に間に合います',tapswitch:'押すと、そのバス停からの案内に切りかわります。',
@@ -174,7 +174,7 @@ oklist:'◎ 乗ってOK（このあとの便）',arr:'→ {0}着',slow:'⏳遠�
 allok:'✓ {0}に来るバスは全部「{1}」に行きます。安心して乗ってください。',
 sideface:'🚌 バスのよこ（側面）の表示も見る',sidenote:'バスのよこ（側面）の表示',
 lastbus:'⚠️ これが今日の最終バスです！逃すと明日までありません',fewleft:'きょうはこのあと、あと{0}本だけです',
-foot:'時刻表ベースの案内です。遅延には対応していません（プロトタイプ v4.5）。',needsnet:'地図の読み込みにはインターネット接続が必要です',
+foot:'時刻表ベースの案内です。遅延には対応していません（プロトタイプ v4.6）。',needsnet:'地図の読み込みにはインターネット接続が必要です',
 ledverified:'✓ 実車の表示を確認済み',ledautogen:'※ この表示は行先データから自動生成しています。実際のバスの表示と異なる場合があります',
 rttitle:'📡 SRTリアルタイム運行情報',rtnow:'{0}時点・走行中のSRT {1}台',rtnone:'いま走行中のSRT車両はありません（運行時間外など）',rtlate:'＋{0}分おくれ',rtontime:'ほぼ定刻',rterr:'リアルタイム情報を取得できませんでした',rtalert:'お知らせ',rtveh:'SRT車両',rtfoot:'※SRTの遅れのみリアルタイム表示に対応しています。',
 dirs:['北','北東','東','南東','南','南西','西','北西'],via:'{0}',
@@ -193,7 +193,7 @@ rvwrong:'ルートから外れました。乗り間違えたかもしれませ�
 rvback:'ルートに戻りました。案内を続けます。',rredo:'📍 降りた場所からさがしなおす'},
 en:{sub:'Nagoya City Bus — prototype',step1:'Bus stop where you get OFF (destination)',step2:'Bus stop where you are NOW',change:'Change',
 ph1:'e.g. Sakae',ph2:'e.g. Nagoya Sta.',gps:'📍 Find from my location',orname:'or search by name',
-locating2:'Measuring your location… (±{0} m)',gpsambig:'📍 GPS accuracy is ±{0} m here, so the exact boarding point cannot be determined. Check the stop number in front of you and tap that marker on the map.',pickhere:'📍 I am here',locating:'Getting your location…',noloc:'Location unavailable. Please search by name.',nostop:'No bus stop found within 800 m. Please search by name.',
+locating2:'Measuring your location… (±{0} m)',gpsambig:'📍 GPS accuracy is ±{0} m here, so the exact boarding point cannot be determined. Check the stop number in front of you and tap that marker on the map.',pickhere:'📍 I am here',gpsfar:'📍 The nearest bus stop is "{0}" (about {2} m to the {1}). Once you get there, tap its marker on the map to choose the boarding point.',locating:'Getting your location…',noloc:'Location unavailable. Please search by name.',nostop:'No bus stop found within 800 m. Please search by name.',
 notfound:'Name not found. Similar bus stops:',same:'Your destination is where you already are 😊',
 nodirect:'😢 No direct bus from "{0}" to "{1}" at this time.',nodirect_never:'😢 There is no direct bus from "{0}" to "{1}" on any day or time. Please use Google Maps below for a route with transfers.',nodirect_today:'😢 Today\'s buses from "{0}" to "{1}" have finished (last one left at {2}). The next one departs {3} at {4}.',nodirect_otherday:'😢 No direct bus from "{0}" to "{1}" runs today. The next one departs {3} at {4}.',tomorrow:'tomorrow',wd:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],datefmt:'{2} {0}/{1}',walkable:'🚶 But you can catch one at a nearby stop!',
 towalk:'About {1} m {0} (walk {2} min) — catches the {3} bus',tapswitch:'Tap to see guidance from that stop.',
@@ -210,7 +210,7 @@ oklist:'◎ OK to board (upcoming buses)',arr:'→ arr. {0}',slow:'⏳detour',ng
 allok:'✓ Every bus at {0} goes to "{1}". Board with confidence!',
 sideface:'🚌 Show the SIDE display too',sidenote:'Side display of the bus',
 lastbus:'⚠️ This is the LAST bus today! If you miss it, there is no bus until tomorrow.',fewleft:'Only {0} more bus(es) today after this one.',
-foot:'Timetable-based guidance. Delays are not reflected (prototype v4.5).',needsnet:'Internet connection is needed to load the map',
+foot:'Timetable-based guidance. Delays are not reflected (prototype v4.6).',needsnet:'Internet connection is needed to load the map',
 ledverified:'✓ Verified against the actual bus display',ledautogen:'※ This display is auto-generated from route data and may differ from the actual bus.',
 rttitle:'📡 SRT real-time status',rtnow:'As of {0} — {1} SRT vehicle(s) running',rtnone:'No SRT vehicles are running right now (outside service hours, etc.)',rtlate:'+{0} min late',rtontime:'about on time',rterr:'Could not load real-time data',rtalert:'Notice',rtveh:'SRT vehicle',rtfoot:' *Only SRT delays are shown in real time.',
 dirs:['north','northeast','east','southeast','south','southwest','west','northwest'],via:'via {0}',
@@ -229,7 +229,7 @@ rvwrong:'You are off the route. This may be the wrong bus. Please get off at the
 rvback:'Back on the route. Continuing guidance.',rredo:'📍 Search again from where I am'},
 zh:{sub:'名古屋市营巴士 — 测试版',step1:'要下车的巴士站（目的地）',step2:'现在所在的巴士站',change:'更改',
 ph1:'例：栄 (Sakae)',ph2:'例：名古屋駅',gps:'📍 从当前位置查找',orname:'或按名称搜索',
-locating2:'正在测量位置…（误差 ±{0}米）',gpsambig:'📍 此处GPS误差为±{0}米，无法确定具体乘车点。请查看眼前的乘车点编号，并点击地图上对应的标记。',pickhere:'📍 我在这里',locating:'正在获取位置…',noloc:'无法获取位置信息，请按名称搜索。',nostop:'800米内未找到巴士站，请按名称搜索。',
+locating2:'正在测量位置…（误差 ±{0}米）',gpsambig:'📍 此处GPS误差为±{0}米，无法确定具体乘车点。请查看眼前的乘车点编号，并点击地图上对应的标记。',pickhere:'📍 我在这里',gpsfar:'📍 最近的巴士站是「{0}」（往{1}约{2}米）。到达后请点击地图上的标记选择乘车点。',locating:'正在获取位置…',noloc:'无法获取位置信息，请按名称搜索。',nostop:'800米内未找到巴士站，请按名称搜索。',
 notfound:'未找到该名称。相似的巴士站：',same:'目的地与当前位置相同 😊',
 nodirect:'😢 现在没有从「{0}」直达「{1}」的巴士。',nodirect_never:'😢 任何日期、任何时间都没有从「{0}」直达「{1}」的巴士。请用下方的Google地图查找换乘路线。',nodirect_today:'😢 今天从「{0}」到「{1}」的巴士已经结束（末班 {2} 发车）。下一班是{3} {4} 发车。',nodirect_otherday:'😢 今天没有从「{0}」直达「{1}」的巴士运行。下一班是{3} {4} 发车。',tomorrow:'明天',wd:['周日','周一','周二','周三','周四','周五','周六'],datefmt:'{0}/{1}（{2}）',walkable:'🚶 不过，附近的巴士站有车可乘！',
 towalk:'向{0}约{1}米（步行{2}分钟）・赶得上{3}发车的班次',tapswitch:'点按即可切换到该巴士站的指引。',
@@ -246,7 +246,7 @@ oklist:'◎ 可以乘坐（之后的班次）',arr:'→ {0}到达',slow:'⏳绕�
 allok:'✓ {0}的所有巴士都开往「{1}」，请放心乘坐。',
 sideface:'🚌 查看车身侧面显示',sidenote:'车身侧面显示',
 lastbus:'⚠️ 这是今天的末班车！错过就要等到明天了。',fewleft:'今天之后只剩{0}班了。',
-foot:'基于时刻表，不反映延误（测试版 v4.5）。',needsnet:'加载地图需要网络连接',
+foot:'基于时刻表，不反映延误（测试版 v4.6）。',needsnet:'加载地图需要网络连接',
 ledverified:'✓ 已与实际车辆显示核对',ledautogen:'※ 此显示由线路数据自动生成，可能与实际车辆的显示不同',
 rttitle:'📡 SRT实时运行信息',rtnow:'{0}时点·运行中的SRT {1}辆',rtnone:'当前没有运行中的SRT车辆（可能在运营时间外）',rtlate:'晚点{0}分钟',rtontime:'基本准点',rterr:'无法获取实时信息',rtalert:'通知',rtveh:'SRT车辆',rtfoot:'※仅SRT的延误支持实时显示。',
 dirs:['北','东北','东','东南','南','西南','西','西北'],via:'经由{0}',
@@ -265,7 +265,7 @@ rvwrong:'已偏离路线，可能坐错车了。请在下一站下车。',
 rvback:'已回到路线上，继续为您导航。',rredo:'📍 从当前位置重新查找'},
 ko:{sub:'나고야 시영버스 — 프로토타입',step1:'내릴 버스 정류장(목적지)',step2:'지금 있는 버스 정류장',change:'변경',
 ph1:'예: 栄 (Sakae)',ph2:'예: 名古屋駅',gps:'📍 현재 위치에서 찾기',orname:'또는 이름으로 검색',
-locating2:'위치를 측정하는 중…(오차 ±{0}m)',gpsambig:'📍 GPS 오차가 ±{0}m라서 정확한 승차 위치를 특정할 수 없습니다. 눈앞의 승차장 번호를 확인하고 지도의 표시를 눌러 주세요.',pickhere:'📍 여기 있어요',locating:'위치 확인 중…',noloc:'위치 정보를 사용할 수 없습니다. 이름으로 검색해 주세요.',nostop:'800m 이내에 정류장이 없습니다. 이름으로 검색해 주세요.',
+locating2:'위치를 측정하는 중…(오차 ±{0}m)',gpsambig:'📍 GPS 오차가 ±{0}m라서 정확한 승차 위치를 특정할 수 없습니다. 눈앞의 승차장 번호를 확인하고 지도의 표시를 눌러 주세요.',pickhere:'📍 여기 있어요',gpsfar:'📍 가장 가까운 정류장은 「{0}」({1}쪽 약 {2}m)입니다. 도착하면 지도의 표시를 눌러 승차장을 골라 주세요.',locating:'위치 확인 중…',noloc:'위치 정보를 사용할 수 없습니다. 이름으로 검색해 주세요.',nostop:'800m 이내에 정류장이 없습니다. 이름으로 검색해 주세요.',
 notfound:'해당 이름을 찾을 수 없습니다. 비슷한 정류장:',same:'목적지와 현재 위치가 같습니다 😊',
 nodirect:'😢 지금은 「{0}」에서 「{1}」(으)로 바로 가는 버스가 없습니다.',nodirect_never:'😢 「{0}」에서 「{1}」(으)로 바로 가는 버스는 어떤 요일·시간에도 없습니다. 아래 Google 지도에서 환승 경로를 찾아 주세요.',nodirect_today:'😢 오늘 「{0}」에서 「{1}」(으)로 가는 버스는 끝났습니다(막차 {2} 출발). 다음은 {3} {4} 출발입니다.',nodirect_otherday:'😢 오늘은 「{0}」에서 「{1}」(으)로 바로 가는 버스가 운행하지 않습니다. 다음은 {3} {4} 출발입니다.',tomorrow:'내일',wd:['일','월','화','수','목','금','토'],datefmt:'{0}/{1}({2})',walkable:'🚶 하지만 근처 정류장에서 탈 수 있어요!',
 towalk:'{0}쪽으로 약 {1}m (도보 {2}분) · {3} 출발 버스를 탈 수 있습니다',tapswitch:'누르면 해당 정류장 안내로 전환됩니다.',
@@ -282,7 +282,7 @@ oklist:'◎ 타도 되는 버스 (이후 편)',arr:'→ {0} 도착',slow:'⏳우
 allok:'✓ {0}에 오는 버스는 모두 「{1}」에 갑니다. 안심하고 타세요.',
 sideface:'🚌 옆면(측면) 표시도 보기',sidenote:'버스 옆면 표시',
 lastbus:'⚠️ 오늘의 막차입니다! 놓치면 내일까지 버스가 없습니다.',fewleft:'오늘 남은 버스는 이후 {0}대뿐입니다.',
-foot:'시간표 기준 안내이며 지연은 반영되지 않습니다 (프로토타입 v4.5).',needsnet:'지도를 불러오려면 인터넷 연결이 필요합니다',
+foot:'시간표 기준 안내이며 지연은 반영되지 않습니다 (프로토타입 v4.6).',needsnet:'지도를 불러오려면 인터넷 연결이 필요합니다',
 ledverified:'✓ 실제 버스 표시와 대조 확인됨',ledautogen:'※ 이 표시는 노선 데이터로 자동 생성한 것으로, 실제 버스의 표시와 다를 수 있습니다',
 rttitle:'📡 SRT 실시간 운행 정보',rtnow:'{0} 기준 · 운행 중인 SRT {1}대',rtnone:'지금 운행 중인 SRT 차량이 없습니다 (운행시간 외 등)',rtlate:'+{0}분 지연',rtontime:'거의 정시',rterr:'실시간 정보를 가져오지 못했습니다',rtalert:'알림',rtveh:'SRT 차량',rtfoot:' ※SRT의 지연만 실시간으로 표시됩니다.',
 dirs:['북','북동','동','남동','남','남서','서','북서'],via:'{0} 경유',
@@ -301,7 +301,7 @@ rvwrong:'경로를 벗어났습니다. 잘못 탔을 수 있습니다. 다음 �
 rvback:'경로로 돌아왔습니다. 안내를 계속합니다.',rredo:'📍 지금 위치에서 다시 찾기'},
 vi:{sub:'Xe buýt TP Nagoya — bản thử nghiệm',step1:'Trạm bạn muốn XUỐNG (điểm đến)',step2:'Trạm bạn đang đứng',change:'Thay đổi',
 ph1:'VD: 栄 (Sakae)',ph2:'VD: 名古屋駅',gps:'📍 Tìm từ vị trí hiện tại',orname:'hoặc tìm theo tên',
-locating2:'Đang đo vị trí… (sai số ±{0} m)',gpsambig:'📍 Sai số GPS ở đây là ±{0} m nên chưa xác định được điểm lên xe. Hãy xem số điểm dừng trước mặt và chạm vào dấu tương ứng trên bản đồ.',pickhere:'📍 Tôi ở đây',locating:'Đang xác định vị trí…',noloc:'Không dùng được định vị. Hãy tìm theo tên.',nostop:'Không thấy trạm nào trong vòng 800 m. Hãy tìm theo tên.',
+locating2:'Đang đo vị trí… (sai số ±{0} m)',gpsambig:'📍 Sai số GPS ở đây là ±{0} m nên chưa xác định được điểm lên xe. Hãy xem số điểm dừng trước mặt và chạm vào dấu tương ứng trên bản đồ.',pickhere:'📍 Tôi ở đây',gpsfar:'📍 Trạm gần nhất là "{0}" (khoảng {2} m về phía {1}). Đến nơi rồi hãy chạm vào dấu trên bản đồ để chọn điểm lên xe.',locating:'Đang xác định vị trí…',noloc:'Không dùng được định vị. Hãy tìm theo tên.',nostop:'Không thấy trạm nào trong vòng 800 m. Hãy tìm theo tên.',
 notfound:'Không tìm thấy tên này. Các trạm tương tự:',same:'Điểm đến trùng với nơi bạn đang đứng 😊',
 nodirect:'😢 Hiện không có xe buýt đi thẳng từ "{0}" đến "{1}".',nodirect_never:'😢 Không có xe buýt đi thẳng từ "{0}" đến "{1}" vào bất kỳ ngày hay giờ nào. Hãy tìm lộ trình có chuyển tuyến bằng Google Maps bên dưới.',nodirect_today:'😢 Xe buýt hôm nay từ "{0}" đến "{1}" đã hết (chuyến cuối lúc {2}). Chuyến tiếp theo: {3} lúc {4}.',nodirect_otherday:'😢 Hôm nay không có xe buýt đi thẳng từ "{0}" đến "{1}". Chuyến tiếp theo: {3} lúc {4}.',tomorrow:'ngày mai',wd:['CN','T2','T3','T4','T5','T6','T7'],datefmt:'{2} {1}/{0}',walkable:'🚶 Nhưng bạn có thể đón xe ở trạm gần đây!',
 towalk:'Khoảng {1} m về hướng {0} (đi bộ {2} phút) · kịp chuyến {3}',tapswitch:'Chạm để xem hướng dẫn từ trạm đó.',
@@ -318,7 +318,7 @@ oklist:'◎ Có thể lên (các chuyến sắp tới)',arr:'→ đến {0}',slo
 allok:'✓ Mọi xe đến {0} đều đi "{1}". Cứ yên tâm lên xe!',
 sideface:'🚌 Xem cả bảng bên hông xe',sidenote:'Bảng hiển thị bên hông xe',
 lastbus:'⚠️ Đây là chuyến xe CUỐI CÙNG hôm nay! Lỡ chuyến này thì phải đợi đến mai.',fewleft:'Hôm nay chỉ còn {0} chuyến nữa sau chuyến này.',
-foot:'Theo lịch trình, chưa phản ánh chậm trễ (bản thử v4.5).',needsnet:'Cần kết nối Internet để tải bản đồ',
+foot:'Theo lịch trình, chưa phản ánh chậm trễ (bản thử v4.6).',needsnet:'Cần kết nối Internet để tải bản đồ',
 ledverified:'✓ Đã đối chiếu với bảng hiển thị xe thực tế',ledautogen:'※ Hiển thị này được tạo tự động từ dữ liệu tuyến, có thể khác với xe buýt thực tế',
 rttitle:'📡 SRT theo thời gian thực',rtnow:'Lúc {0} — {1} xe SRT đang chạy',rtnone:'Hiện không có xe SRT đang chạy (ngoài giờ hoạt động, v.v.)',rtlate:'trễ {0} phút',rtontime:'gần đúng giờ',rterr:'Không tải được dữ liệu thời gian thực',rtalert:'Thông báo',rtveh:'Xe SRT',rtfoot:' *Chỉ hiển thị thời gian thực độ trễ của SRT.',
 dirs:['bắc','đông bắc','đông','đông nam','nam','tây nam','tây','tây bắc'],via:'qua {0}',
@@ -337,7 +337,7 @@ rvwrong:'Đã lệch khỏi tuyến. Có thể bạn lên nhầm xe. Hãy xuốn
 rvback:'Đã trở lại đúng tuyến. Tiếp tục hướng dẫn.',rredo:'📍 Tìm lại từ vị trí hiện tại'},
 id:{sub:'Bus Kota Nagoya — prototipe',step1:'Halte tempat Anda TURUN (tujuan)',step2:'Halte tempat Anda sekarang',change:'Ubah',
 ph1:'cth: 栄 (Sakae)',ph2:'cth: 名古屋駅',gps:'📍 Cari dari lokasi saya',orname:'atau cari berdasarkan nama',
-locating2:'Mengukur lokasi… (akurasi ±{0} m)',gpsambig:'📍 Akurasi GPS di sini ±{0} m, jadi titik naik yang tepat belum bisa ditentukan. Lihat nomor halte di depan Anda lalu ketuk tandanya di peta.',pickhere:'📍 Saya di sini',locating:'Mengambil lokasi…',noloc:'Lokasi tidak tersedia. Silakan cari berdasarkan nama.',nostop:'Tidak ada halte dalam radius 800 m. Silakan cari berdasarkan nama.',
+locating2:'Mengukur lokasi… (akurasi ±{0} m)',gpsambig:'📍 Akurasi GPS di sini ±{0} m, jadi titik naik yang tepat belum bisa ditentukan. Lihat nomor halte di depan Anda lalu ketuk tandanya di peta.',pickhere:'📍 Saya di sini',gpsfar:'📍 Halte terdekat adalah "{0}" (sekitar {2} m ke arah {1}). Setelah sampai, ketuk tandanya di peta untuk memilih titik naik.',locating:'Mengambil lokasi…',noloc:'Lokasi tidak tersedia. Silakan cari berdasarkan nama.',nostop:'Tidak ada halte dalam radius 800 m. Silakan cari berdasarkan nama.',
 notfound:'Nama tidak ditemukan. Halte yang mirip:',same:'Tujuan sama dengan lokasi Anda sekarang 😊',
 nodirect:'😢 Saat ini tidak ada bus langsung dari "{0}" ke "{1}".',nodirect_never:'😢 Tidak ada bus langsung dari "{0}" ke "{1}" pada hari atau jam mana pun. Silakan cari rute dengan transit di Google Maps di bawah.',nodirect_today:'😢 Bus hari ini dari "{0}" ke "{1}" sudah habis (terakhir berangkat {2}). Berikutnya {3} pukul {4}.',nodirect_otherday:'😢 Hari ini tidak ada bus langsung dari "{0}" ke "{1}". Berikutnya {3} pukul {4}.',tomorrow:'besok',wd:['Min','Sen','Sel','Rab','Kam','Jum','Sab'],datefmt:'{2} {1}/{0}',walkable:'🚶 Tapi Anda bisa naik dari halte terdekat!',
 towalk:'Sekitar {1} m ke arah {0} (jalan {2} menit) · terkejar bus pukul {3}',tapswitch:'Ketuk untuk beralih ke panduan dari halte itu.',
@@ -354,7 +354,7 @@ oklist:'◎ Boleh naik (bus berikutnya)',arr:'→ tiba {0}',slow:'⏳memutar',ng
 allok:'✓ Semua bus di {0} menuju "{1}". Naik saja dengan tenang!',
 sideface:'🚌 Lihat juga tampilan samping bus',sidenote:'Tampilan samping bus',
 lastbus:'⚠️ Ini bus TERAKHIR hari ini! Kalau terlewat, tidak ada bus sampai besok.',fewleft:'Setelah ini tinggal {0} bus lagi hari ini.',
-foot:'Berdasarkan jadwal; keterlambatan tidak tercermin (prototipe v4.5).',needsnet:'Perlu koneksi internet untuk memuat peta',
+foot:'Berdasarkan jadwal; keterlambatan tidak tercermin (prototipe v4.6).',needsnet:'Perlu koneksi internet untuk memuat peta',
 ledverified:'✓ Sudah dicek dengan tampilan bus sebenarnya',ledautogen:'※ Tampilan ini dibuat otomatis dari data rute dan mungkin berbeda dari bus sebenarnya',
 rttitle:'📡 Info SRT waktu nyata',rtnow:'Per {0} — {1} kendaraan SRT beroperasi',rtnone:'Tidak ada SRT yang sedang beroperasi (di luar jam layanan, dll.)',rtlate:'telat {0} mnt',rtontime:'hampir tepat waktu',rterr:'Data waktu nyata tidak dapat dimuat',rtalert:'Pemberitahuan',rtveh:'Kendaraan SRT',rtfoot:' *Hanya keterlambatan SRT yang ditampilkan waktu nyata.',
 dirs:['utara','timur laut','timur','tenggara','selatan','barat daya','barat','barat laut'],via:'lewat {0}',
@@ -373,7 +373,7 @@ rvwrong:'Keluar dari rute. Mungkin Anda salah bus. Silakan turun di halte beriku
 rvback:'Kembali ke rute. Panduan dilanjutkan.',rredo:'📍 Cari lagi dari lokasi sekarang'},
 tl:{sub:'Nagoya City Bus — prototype',step1:'Hintuan kung saan ka BABABA (destinasyon)',step2:'Hintuan kung nasaan ka ngayon',change:'Palitan',
 ph1:'hal: 栄 (Sakae)',ph2:'hal: 名古屋駅',gps:'📍 Hanapin mula sa lokasyon ko',orname:'o maghanap gamit ang pangalan',
-locating2:'Sinusukat ang lokasyon… (±{0} m)',gpsambig:'📍 ±{0} m ang GPS dito kaya hindi matukoy ang eksaktong sakayan. Tingnan ang numero ng hintuan sa harap mo at i-tap ang marka nito sa mapa.',pickhere:'📍 Nandito ako',locating:'Kinukuha ang lokasyon…',noloc:'Hindi magamit ang lokasyon. Maghanap gamit ang pangalan.',nostop:'Walang hintuan sa loob ng 800 m. Maghanap gamit ang pangalan.',
+locating2:'Sinusukat ang lokasyon… (±{0} m)',gpsambig:'📍 ±{0} m ang GPS dito kaya hindi matukoy ang eksaktong sakayan. Tingnan ang numero ng hintuan sa harap mo at i-tap ang marka nito sa mapa.',pickhere:'📍 Nandito ako',gpsfar:'📍 Ang pinakamalapit na hintuan ay "{0}" (mga {2} m sa {1}). Pagdating doon, i-tap ang marka nito sa mapa para piliin ang sakayan.',locating:'Kinukuha ang lokasyon…',noloc:'Hindi magamit ang lokasyon. Maghanap gamit ang pangalan.',nostop:'Walang hintuan sa loob ng 800 m. Maghanap gamit ang pangalan.',
 notfound:'Hindi nakita ang pangalan. Mga katulad na hintuan:',same:'Pareho ang destinasyon at kinaroroonan mo 😊',
 nodirect:'😢 Walang direktang bus mula "{0}" papuntang "{1}" sa oras na ito.',nodirect_never:'😢 Walang direktang bus mula "{0}" papuntang "{1}" sa anumang araw o oras. Gamitin ang Google Maps sa ibaba para sa rutang may lipat.',nodirect_today:'😢 Tapos na ang mga bus ngayong araw mula "{0}" papuntang "{1}" (huling biyahe {2}). Susunod: {3} ng {4}.',nodirect_otherday:'😢 Walang direktang bus mula "{0}" papuntang "{1}" ngayong araw. Susunod: {3} ng {4}.',tomorrow:'bukas',wd:['Lin','Lun','Mar','Miy','Huw','Biy','Sab'],datefmt:'{2} {1}/{0}',walkable:'🚶 Pero may masasakyan ka sa kalapit na hintuan!',
 towalk:'Mga {1} m pa-{0} (lakad {2} min) · aabutan ang biyaheng {3}',tapswitch:'I-tap para sa gabay mula sa hintuang iyon.',
@@ -390,7 +390,7 @@ oklist:'◎ Puwedeng sakyan (mga susunod na biyahe)',arr:'→ dating {0}',slow:'
 allok:'✓ Lahat ng bus sa {0} ay papuntang "{1}". Sakay lang nang panatag!',
 sideface:'🚌 Ipakita rin ang display sa gilid ng bus',sidenote:'Display sa gilid ng bus',
 lastbus:'⚠️ Ito na ang HULING bus ngayon! Kapag naiwan ka, wala nang bus hanggang bukas.',fewleft:'{0} biyahe na lang ngayon pagkatapos nito.',
-foot:'Batay sa timetable; hindi kasama ang delay (prototype v4.5).',needsnet:'Kailangan ng internet para sa mapa',
+foot:'Batay sa timetable; hindi kasama ang delay (prototype v4.6).',needsnet:'Kailangan ng internet para sa mapa',
 ledverified:'✓ Na-verify sa aktwal na display ng bus',ledautogen:'※ Awtomatikong nabuo ang display na ito mula sa datos ng ruta at maaaring iba sa aktwal na bus',
 rttitle:'📡 Real-time na impormasyon ng SRT',rtnow:'Bandang {0} — {1} SRT ang tumatakbo',rtnone:'Walang tumatakbong SRT ngayon (labas sa oras ng serbisyo, atbp.)',rtlate:'late ng {0} min',rtontime:'nasa oras',rterr:'Hindi makuha ang real-time na data',rtalert:'Abiso',rtveh:'Sasakyang SRT',rtfoot:' *Tanging delay ng SRT ang ipinapakita nang real-time.',
 dirs:['hilaga','hilagang-silangan','silangan','timog-silangan','timog','timog-kanluran','kanluran','hilagang-kanluran'],via:'daan sa {0}',
@@ -469,7 +469,7 @@ function dedupePoles(list){ const out=[]; list.forEach(pi=>{ if(!out.some(q=>sam
 let dest = localStorage.getItem('dest') || null;
 let here = null;
 let myPos = null;
-let gpsAmbig=false; // 2026-09-26 GPS改修：GPSの誤差円に複数ののりばが入り、のりばを断定できない状態（地図の印タップで解消）
+let gpsAmbig=false, gpsFar=false; // gpsFar＝バス停から離れた場所でGPSを押した（いまいるのりばの概念がない・距離案内は出す） // 2026-09-26 GPS改修：GPSの誤差円に複数ののりばが入り、のりばを断定できない状態（地図の印タップで解消）
 let nearestPole = null;
 let walkMin = 0;
 
@@ -514,9 +514,9 @@ function suggest(kind){
 function setDest(n){ dest=n; localStorage.setItem('dest',n); render(); }
 function resetDest(){ dest=null; localStorage.removeItem('dest'); render(); }
 function setHere(n,pole){ here=n; nearestPole=pole; walkMin=0; render(); }
-function resetHere(){ here=null; nearestPole=null; myPos=null; walkMin=0; gpsAmbig=false; render(); }
+function resetHere(){ here=null; nearestPole=null; myPos=null; walkMin=0; gpsAmbig=false; gpsFar=false; render(); }
 // 2026-09-26 GPS改修：地図の印をタップして「ここにいる」＝のりばを手で確定（GPSで絞れない時・名前検索でのりば未定の時）
-function pickPole(pi){ const s=GD.stops[pi]; here=s[0]; nearestPole=pi; myPos={lat:s[1],lon:s[2],acc:0}; gpsAmbig=false; walkMin=0; render(); window.scrollTo(0,0); }
+function pickPole(pi){ const s=GD.stops[pi]; here=s[0]; nearestPole=pi; myPos={lat:s[1],lon:s[2],acc:0}; gpsAmbig=false; gpsFar=false; walkMin=0; render(); window.scrollTo(0,0); }
 function goNearby(pi,w){ here=GD.stops[pi][0]; nearestPole=pi; walkMin=w; render(); window.scrollTo(0,0); }
 
 // ================== 地理計算 ==================
@@ -547,7 +547,11 @@ function gpsDecide(lat,lon,acc){ // 純関数：位置→{stop:最寄り停留�
   const r=Math.max(acc||0,0);
   const others=activePoles(GD.stops[best][0]).filter(i=>i!==best && !samePole(i,best)).map(i=>({i,d:dist(lat,lon,GD.stops[i][1],GD.stops[i][2])})).sort((a,b)=>a.d-b.d);
   const near=others.filter(o=>o.d-bd<=r).map(o=>o.i);
-  return {stop:best,dd:bd,pole:near.length?null:best,ambig:near.length>0,near,d2:others.length?others[0].d:null};
+  // 2026-09-26 自宅で押した実測（誤差7m・最寄りの川宮まで約280m）：遠くから見ると2本ののりばの距離差が誤差以下＝「絞れません」と出た。
+  //   バス停から明らかに離れている（最寄りまで 60m と誤差の2倍 のどちらより遠い）ときは「いまいるのりば」の話ではない＝far として案内を分ける
+  const far = bd > Math.max(60, 2*r);
+  if(far) return {stop:best,dd:bd,pole:null,ambig:false,far:true,near:[],d2:others.length?others[0].d:null};
+  return {stop:best,dd:bd,pole:near.length?null:best,ambig:near.length>0,far:false,near,d2:others.length?others[0].d:null};
 }
 function useGPS(){
   const msg=document.getElementById('gpsMsg');
@@ -555,7 +559,7 @@ function useGPS(){
     myPos={lat:DEBUG_POS.lat, lon:DEBUG_POS.lon, acc:0};
     let best=-1,bd=1e9;
     GD.stops.forEach((s,i)=>{ const dd=dist(myPos.lat,myPos.lon,s[1],s[2]); if(dd<bd){bd=dd;best=i;} });
-    gpsAmbig=false; setHere(GD.stops[best][0], best);
+    gpsAmbig=false; gpsFar=false; setHere(GD.stops[best][0], best);
     return;
   }
   if(!navigator.geolocation){ msg.textContent=t('noloc'); return; }
@@ -568,7 +572,7 @@ function useGPS(){
     myPos={lat:p.coords.latitude, lon:p.coords.longitude, acc:acc};
     const d=gpsDecide(myPos.lat,myPos.lon,acc);
     if(d.stop<0){ msg.textContent=t('nostop'); return; }
-    gpsAmbig=d.ambig;
+    gpsAmbig=d.ambig; gpsFar=!!d.far;
     setHere(GD.stops[d.stop][0], d.pole);
   }
   function finish(){
@@ -765,7 +769,8 @@ function render(){
 
   if(poles.length>1){
     html+='<div class="card">';
-    if(gpsAmbig && myPos) html+='<div class="gpsnote">'+t('gpsambig', Math.round(myPos.acc||0))+'</div>'; // 2026-09-26 GPS改修：GPSでのりばを絞れない時の正直な案内
+    if(gpsAmbig && myPos) html+='<div class="gpsnote">'+t('gpsambig', Math.round(myPos.acc||0))+'</div>';
+    if(gpsFar && myPos && !gpsAmbig){ let np=null,nd=1e9; poles.forEach(pi=>{ const q=GD.stops[pi]; const dd=dist(myPos.lat,myPos.lon,q[1],q[2]); if(dd<nd){nd=dd;np=pi;} }); if(np!==null){ const q=GD.stops[np]; html+='<div class="gpsnote">'+t('gpsfar', esc(sn(here)), bearing(myPos.lat,myPos.lon,q[1],q[2]), Math.round(nd))+'</div>'; } } // バス停から離れた所で押した時（2026-09-26） // 2026-09-26 GPS改修：GPSでのりばを絞れない時の正直な案内
     html+='<div class="label">'+t('polecare', esc(sn(here)), dedupePoles(poles).length)+'</div>'; // か所数も同一のりばを1本に（2026-09-26）
     let wrongPole = nearestPole!==null && !goodPoles.some(v=>v.pi===nearestPole) && poles.includes(nearestPole);
     goodPoles.forEach((v,vi)=>{
