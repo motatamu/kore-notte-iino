@@ -28,6 +28,8 @@ https://motatamu.github.io/kore-notte-iino/
 3. のりばカードに「乗ってよいバス」が、実車と同じLED表示で並ぶ
 4. 来たバスのLEDと画面を見比べて、同じなら乗る
 
+詳しい使い方（画面の見方・GPSの注意・SRTのリアルタイム表示・乗ってからの案内・FAQ）＝ **[使い方ページ（日本語／English）](https://motatamu.github.io/kore-notte-iino/manual.html)**（アプリのフッター「📖 使い方」からも開けます）
+
 ## 仕組み
 
 - 単一の `index.html`（フレームワーク不使用）＋ 変換済みダイヤ `data.js`
