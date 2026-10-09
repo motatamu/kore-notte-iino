@@ -30,11 +30,15 @@ jobs:
           echo "result=$result" >> "$GITHUB_OUTPUT"
           echo "結果: $result"
 
+      - name: 行先表示データ（led_front.txt / led_side.txt）を検証して led.js を作り直す
+        # 新ダイヤで消えた行先が登録に残っていれば警告が出る（致命ではない）。led.js は CSV から常に作り直す
+        run: python3 tools/convert_led.py
+
       - name: 変更があればコミット（＝公開）
         run: |
           git config user.name "dia-auto-update"
           git config user.email "actions@users.noreply.github.com"
-          git add data.js tools/data-version.txt
+          git add data.js led.js tools/data-version.txt
           if ! git diff --cached --quiet; then
             git commit -m "ダイヤ自動更新: $(sed -n 2p tools/data-version.txt)"
             git push
