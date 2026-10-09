@@ -16,6 +16,7 @@ FRONT_COLS = ['route_id','route_short_name','trip_headsign','board_stop_name','r
 SIDE_COLS  = ['route_id','route_short_name','trip_headsign','origin_stop_name','board_stop_name',
               'stop_name_1','stop_name_2','stop_name_3','stop_name_4','stop_name_5','stop_name_6',
               'header_style','header_loop','header_romaji','source']
+OPTIONAL_COLS = {'source'}   # 典拠メモ。無くてもよい（本リポジトリでは別ファイル led_sources.txt に分けている）
 ENUM = {
     'route_box':   {'', 'none'},
     'via_mode':    {'', 'none', 'inline', 'top', 'stack'},
@@ -32,7 +33,7 @@ def read_csv(path, cols):
         rows = list(csv.DictReader(f))
     if not rows:
         return rows
-    missing = [c for c in cols if c not in rows[0]]
+    missing = [c for c in cols if c not in rows[0] and c not in OPTIONAL_COLS]
     extra   = [c for c in rows[0] if c not in cols]
     if missing: raise SystemExit('%s: 列が足りません: %s' % (path, missing))
     if extra:   print('%s: 未知の列（無視します）: %s' % (path, extra))
