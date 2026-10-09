@@ -15,6 +15,7 @@ https://motatamu.github.io/kore-notte-iino/
 - **のりば単位の案内** — 同じ名前のバス停でも、正しいのりばへ地図と目印（コンビニ・交差点など）で誘導
 - **いちばん早く目的地に着くバスを推薦** — 循環バスの遠回りを回避
 - **行先表示（LED）の再現** — 既定ではGTFSの行先文字から生成した汎用のドット表示。実車を撮影して判読できた系統（現在は守山区の一部と栄バスターミナル周辺）だけを、実車そっくりのレイアウトに置き換える「段階解禁」方式。未確認の系統を実車どおりだと装わない
+- **行先表示オープンデータ形式（提案）** — 実車判読の結果は、GTFSの系統・行先に紐づけたCSV 2枚（`led_front.txt`＝前面・`led_side.txt`＝側面）に入れてあり、アプリはそれを読んで描く。事業者が表示器の「コマ表」をこの形で公開してくれれば、撮影も判読もなしに全系統が実車どおりになる（形式の説明＝[spec/led-opendata.md](spec/led-opendata.md)）
 - **リアルタイム対応（名古屋市SRT）** — GTFS-RT（車両位置・遅延・運行情報）を照合し、「＋N分おくれ」「ほぼ定刻」を表示。来ないバスを待たせないだけでなく、「来るバスは、ちゃんと来る」と伝える
 - **正直な表示** — 運行のない日・時間帯は「運行なし」と明示。リアルタイム情報が無い系統では推測を推測として表示
 - **7言語対応** — 日本語・English・中文・한국어・Tiếng Việt・Bahasa Indonesia・Filipino
@@ -34,6 +35,7 @@ https://motatamu.github.io/kore-notte-iino/
 
 - 単一の `index.html`（フレームワーク不使用）＋ 変換済みダイヤ `data.js`
 - `tools/convert_gtfs.py` — GTFS-JP（複数フィード対応）を `data.js` に変換。運行日カレンダー・のりば・行先表示（stop_headsign）・RT照合用IDを保持
+- `led_front.txt` / `led_side.txt` — 実車で確認した行先表示（LED）の登録データ（行先表示オープンデータ形式 v0.1・CC BY 4.0）。`tools/convert_led.py` が `led.js` に変換し、アプリ起動時に描画用の表へ展開する。登録の追加＝CSVに1行足して変換するだけ
 - `tools/auto_update.py` ＋ `.github/workflows/update-data.yml` — 週次自動更新
 - GTFS-RT（Protocol Buffers）は外部ライブラリなしの最小デコーダで読み取り。配信元にCORSヘッダが無いため Cloudflare Worker で中継
 - 静的ホスティング（GitHub Pages）のみで動作。サーバー側の状態は持たない
@@ -42,6 +44,7 @@ https://motatamu.github.io/kore-notte-iino/
 
 GTFS-JP を公開している事業者であれば、`tools/convert_gtfs.py` にzipを渡して `data.js` を作り直すだけで、案内・推薦・多言語・自動更新は動きます。
 LED再現は「実車を見て確認したものだけ表示する」方針のため、新しい都市では汎用表示から始まり、実車の判読を登録するごとに本物に近づきます。
+その都市の事業者が `led_front.txt` / `led_side.txt`（[形式](spec/led-opendata.md)）を公開していれば、それを置くだけで初日から実車どおりになります。
 
 ## 開発について
 
@@ -51,6 +54,7 @@ LED再現は「実車を見て確認したものだけ表示する」方針の�
 
 - ソースコード：**MIT License**（[LICENSE](LICENSE)）
 - `data.js`：下記オープンデータ（CC BY 4.0）から生成した派生データ。再利用時は元データの出典表示が必要です
+- `led_front.txt`・`led_side.txt`・`led.js`：**CC BY 4.0**（出典表示：「これ乗っていいの？」motatamu）。実車の撮影・判読にもとづく登録データで、他のアプリからも自由に使えます
 - `lib/`・フォント：それぞれのライセンスに従います（下記）
 
 ## データ・素材のクレジット
