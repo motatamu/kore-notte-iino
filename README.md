@@ -8,7 +8,7 @@ https://motatamu.github.io/kore-notte-iino/
 バスの行先表示（LED）に見立てたドット表示で教えます。
 インストール不要・ログイン不要・無料。スマートフォンのブラウザで開くだけで使えます。
 
-公共交通オープンデータチャレンジ2026 応募作品。
+公共交通オープンデータチャレンジ2026 応募作品。応募時点（2026年11月）の版は **v4.15**（タグ [`v4.15`](https://github.com/motatamu/kore-notte-iino/releases/tag/v4.15)）。その後も改良を続けているため、画面右下の版番号がこれより新しい場合は機能が増えていることがあります。変更の履歴は [Releases](https://github.com/motatamu/kore-notte-iino/releases) にあります。
 
 ## 特徴
 
